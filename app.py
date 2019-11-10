@@ -1,25 +1,20 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from models.base import db
+from models.Category import Category
+from models.City import City
+from models.Object import Object
 
 app = Flask(__name__, instance_relative_config=True)
 
 app.config.from_pyfile('config.py')
 app.config.from_pyfile('db_config.py')
-db = SQLAlchemy(app)
+
+db.init_app(app)
+
+with app.app_context():
+    db.create_all()
+    print(Object.query.all())
 
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True, name='user_id')
-    username = db.Column(db.String(100), name='user_name')
-    password = db.Column(db.String(100), name='user_password')
-    email = db.Column(db.String(200), name='user_email')
-
-    def __init__(self, id, username, password, email):
-        self.id = id
-        self.username = username
-        self.password = password
-        self.email = email
-
-
-print('hi')
-print(User.query.all())
+print('app started')
