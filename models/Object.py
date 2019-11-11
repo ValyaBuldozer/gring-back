@@ -2,9 +2,6 @@ from models.base import db
 from models.ObjectType import ObjectType
 from sqlalchemy.orm import relationship
 from models.CategoryObject import CategoryObject
-from models.City import City
-from models.CategoryObject import CategoryObject
-from models.Category import Category
 
 
 class Object(db.Model):

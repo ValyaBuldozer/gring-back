@@ -2,7 +2,6 @@ from models.base import db
 from models.ObjectType import ObjectType
 from models.Object import Object
 from sqlalchemy.orm import relationship
-from models.Geolocation import Geolocation
 
 
 class PublicPlace(Object):
