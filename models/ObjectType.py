@@ -2,6 +2,7 @@ from enum import Enum
 
 
 class ObjectType(Enum):
-    place = 0
-    public_place = 1
-    historical_person = 2
+    object = 0
+    place = 1
+    public_place = 2
+    historical_person = 3

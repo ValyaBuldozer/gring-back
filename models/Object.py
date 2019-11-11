@@ -1,6 +1,9 @@
 from models.base import db
 from models.ObjectType import ObjectType
 from sqlalchemy.orm import relationship
+from models.City import City
+from models.CategoryObject import CategoryObject
+from models.Category import Category
 
 
 class Object(db.Model):
@@ -14,3 +17,9 @@ class Object(db.Model):
         db.Integer, db.ForeignKey("city.city_id"), name="object_city_id"
     )
     city = relationship("City")
+    categories = relationship("Category", secondary=CategoryObject)
+
+    __mapper_args__ = {
+        'polymorphic_identity': ObjectType.object,
+        'polymorphic_on': type
+    }

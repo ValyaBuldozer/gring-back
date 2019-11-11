@@ -1,9 +1,6 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 from models.base import db
-from models.Category import Category
-from models.City import City
-from models.Object import Object
+from models.Place import Place
 
 app = Flask(__name__, instance_relative_config=True)
 
@@ -14,7 +11,7 @@ db.init_app(app)
 
 with app.app_context():
     db.create_all()
-    print(Object.query.all())
+    print(Place.query.all())
 
 
 print('app started')
