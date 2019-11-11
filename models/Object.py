@@ -2,7 +2,9 @@ from models.base import db
 from models.ObjectType import ObjectType
 from sqlalchemy.orm import relationship
 from models.CategoryObject import CategoryObject
-
+from models.City import City
+from models.CategoryObject import CategoryObject
+from models.Category import Category
 
 
 class Object(db.Model):
@@ -14,7 +16,7 @@ class Object(db.Model):
     audioguide_link = db.Column(db.String(250), name="object_audioguide_link")
     description = db.Column(db.Text, name="object_description")
     city_id = db.Column(
-        db.Integer, db.ForeignKey("city.city_id"), name="object_city_id, nullable=False"
+        db.Integer, db.ForeignKey("city.city_id"), name="object_city_id", nullable=False
     )
     city = relationship("City")
     categories = relationship("Category", secondary=CategoryObject)

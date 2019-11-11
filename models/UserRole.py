@@ -1,5 +1,4 @@
 from models.base import db
-from sqlalchemy import PrimaryKeyConstraint
 
 
 UserRole = db.Table("user_role", db.metadata,

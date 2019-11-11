@@ -2,7 +2,8 @@ from models.base import db
 from models.ObjectType import ObjectType
 from models.Object import Object
 
-class Place(Object):
+
+class HistoricalPerson(Object):
 
     __tablename__ = "historical_person"
     id = db.Column(
@@ -12,7 +13,7 @@ class Place(Object):
     second_name = db.Column(db.String(30), name="person_second_name", nullable=False)
     patronymic = db.Column(db.String(30), name="person_patronymic", nullable=False)
     birthdate = db.Column(db.Date, name="person_birthdate", nullable=False)
-    deathdate = db.Column(db.Date, name="person_deathdate", nullable=True)
+    deathdate = db.Column(db.Date, name="person_deathdate")
 
     __mapper_args__ = {
         'polymorphic_identity': ObjectType.historical_person
