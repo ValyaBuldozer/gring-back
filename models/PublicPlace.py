@@ -4,9 +4,9 @@ from models.Object import Object
 from sqlalchemy.orm import relationship
 
 
-class Place(Object):
+class PublicPlace(Object):
 
-    __tablename__ = "place"
+    __tablename__ = "public_place"
     id = db.Column(
         db.Integer, db.ForeignKey("object.object_id"), primary_key=True, name="object_id", nullable=False
     )
@@ -18,5 +18,6 @@ class Place(Object):
     geolocation = relationship("Geolocation")
 
     __mapper_args__ = {
-        'polymorphic_identity': ObjectType.place
+        'polymorphic_identity': ObjectType.public_place
     }
+

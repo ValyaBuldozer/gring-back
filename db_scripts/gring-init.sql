@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS place (
 	object_id INT NOT NULL UNIQUE REFERENCES object(object_id),
     place_name VARCHAR(100) NOT NULL,
     place_address VARCHAR(200) NOT NULL DEFAULT '',
-    plcae_geolocation_id INT NOT NULL REFERENCES geolocation(geolocation_id),
+    place_geolocation_id INT NOT NULL REFERENCES geolocation(geolocation_id),
     PRIMARY KEY (object_id)
 );
     
