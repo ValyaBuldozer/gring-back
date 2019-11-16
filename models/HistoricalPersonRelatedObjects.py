@@ -6,6 +6,3 @@ HistoricalPersonRelatedObjects = db.Table("historical_person_related_objects", d
               nullable=False),
     db.Column("object_id", db.Integer, db.ForeignKey("object.object_id"), nullable=False)
 )
-
-
-

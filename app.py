@@ -1,5 +1,7 @@
-from flask import Flask
+from flask import Flask, jsonify
 from models.base import db
+from sqlalchemy.orm.query import Query
+from sqlalchemy.orm.session import sessionmaker
 from models.Category import Category
 from models.City import City
 from models.Object import Object
@@ -16,6 +18,7 @@ from models.User import User
 from models.Review import Review
 from models.Role import Role
 from models.UserRole import UserRole
+from routes.object import object_routes
 
 
 app = Flask(__name__, instance_relative_config=True)
@@ -23,11 +26,14 @@ app = Flask(__name__, instance_relative_config=True)
 app.config.from_pyfile('config.py')
 app.config.from_pyfile('db_config.py')
 
+app.register_blueprint(object_routes)
+
 db.init_app(app)
 
 with app.app_context():
     db.create_all()
-    print(Object.query.all())
 
 
-print('app started')
+@app.errorhandler(404)
+def page_not_found(e):
+    return jsonify(error=404, text=str(e)), 404

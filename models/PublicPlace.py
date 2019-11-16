@@ -31,3 +31,5 @@ class PublicPlace(Object):
         'polymorphic_identity': ObjectType.public_place
     }
 
+    def get_name(self):
+        return self.name
