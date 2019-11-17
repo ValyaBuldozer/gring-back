@@ -1,6 +1,6 @@
  CREATE TABLE IF NOT EXISTS category (
 	category_id INT AUTO_INCREMENT NOT NULL UNIQUE,
-    category_name VARCHAR(20) NOT NULL UNIQUE,
+    category_name VARCHAR(40) NOT NULL UNIQUE,
     object_type ENUM('place', 'public_place', 'historical_person') NOT NULL,
     PRIMARY KEY (category_id)
 );
