@@ -8,3 +8,9 @@ class User(db.Model):
     name = db.Column(db.String(100), name="user_name", nullable=False)
     password = db.Column(db.String(100), name="user_password", nullable=False)
     email = db.Column(db.String(200), name="user_email", nullable=False)
+
+    def to_json(self):
+        return {
+            'id': self.id,
+            'name': self.name
+        }

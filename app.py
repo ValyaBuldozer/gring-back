@@ -20,6 +20,7 @@ from models.Role import Role
 from models.UserRole import UserRole
 from routes.objects import object_blueprint
 from routes.routes import routes_blueprint
+from routes.reviews import review_blueptint
 
 
 app = Flask(__name__, instance_relative_config=True)
@@ -29,6 +30,7 @@ app.config.from_pyfile('db_config.py')
 
 app.register_blueprint(object_blueprint)
 app.register_blueprint(routes_blueprint)
+app.register_blueprint(review_blueptint)
 
 db.init_app(app)
 
@@ -39,3 +41,8 @@ with app.app_context():
 @app.errorhandler(404)
 def page_not_found(e):
     return jsonify(error=404, text=str(e)), 404
+
+
+@app.errorhandler(400)
+def invalid_request(e):
+    return jsonify(error=400, text=str(e)), 400
