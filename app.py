@@ -18,7 +18,8 @@ from models.User import User
 from models.Review import Review
 from models.Role import Role
 from models.UserRole import UserRole
-from routes.object import object_routes
+from routes.objects import object_blueprint
+from routes.routes import routes_blueprint
 
 
 app = Flask(__name__, instance_relative_config=True)
@@ -26,7 +27,8 @@ app = Flask(__name__, instance_relative_config=True)
 app.config.from_pyfile('config.py')
 app.config.from_pyfile('db_config.py')
 
-app.register_blueprint(object_routes)
+app.register_blueprint(object_blueprint)
+app.register_blueprint(routes_blueprint)
 
 db.init_app(app)
 

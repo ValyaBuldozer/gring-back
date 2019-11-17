@@ -1,13 +1,13 @@
 from models.Object import Object
 from models.Category import Category
 from flask import Blueprint, request, abort
-from helpers.json import to_json
-from helpers.array import contains
+from util.json import to_json, returns_json
 
-object_routes = Blueprint('objects', __name__)
+object_blueprint = Blueprint('objects', __name__)
 
 
-@object_routes.route('/objects', methods=['GET'])
+@object_blueprint.route('/objects', methods=['GET'])
+@returns_json
 def get_objects():
     object_type = request.args.get('type')
     category = request.args.get('category')
@@ -16,12 +16,16 @@ def get_objects():
         Object.categories.any(Category.name == category) if 'category' in request.args else True
     ).all()
 
-    return to_json(objects)
+    return to_json(list(map(lambda o: o.to_base_json(), objects)))
 
 
-@object_routes.route('/objects/<object_id>', methods=['GET'])
+@object_blueprint.route('/objects/<object_id>', methods=['GET'])
+@returns_json
 def get_object_by_id(object_id):
-    if Object.query.filter(Object.id == object_id).count() > 0:
-        return to_json(Object.query.get(object_id))
-    else:
+
+    obj = Object.query.get(object_id)
+
+    if (obj is None):
         abort(404, 'Object not found')
+
+    return to_json(obj)

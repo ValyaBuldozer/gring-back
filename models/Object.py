@@ -30,10 +30,14 @@ class Object(db.Model):
         raise NotImplementedError("Must override method get_name")
 
     def to_json(self):
+        return self.to_base_json()
+
+    # we need it because some times we need not to call child's to_json() func
+    def to_base_json(self):
         return {
             'id': self.id,
             'name': self.get_name(),
-            'type': self.type.value,
+            'type': self.type.name,
             'image_link': self.image_link,
             'audioguide_link': self.audioguide_link,
             'categories': self.categories

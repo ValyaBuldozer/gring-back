@@ -1,6 +1,8 @@
 from models.base import db
+from sqlalchemy.orm import relationship
 from models.ObjectType import ObjectType
 from models.Object import Object
+from models.HistoricalPersonRelatedObjects import HistoricalPersonRelatedObjects
 
 
 class HistoricalPerson(Object):
@@ -14,6 +16,7 @@ class HistoricalPerson(Object):
     patronymic = db.Column(db.String(30), name="person_patronymic", nullable=False, default="")
     birthdate = db.Column(db.Date, name="person_birthdate", nullable=False)
     deathdate = db.Column(db.Date, name="person_deathdate")
+    related_objects = relationship("Object", secondary=HistoricalPersonRelatedObjects)
 
     __mapper_args__ = {
         'polymorphic_identity': ObjectType.historical_person
@@ -25,3 +28,18 @@ class HistoricalPerson(Object):
             return ("%s. %s. %s" % (self.name[0], self.patronymic[0], self.second_name))
         else:
             return self.name + " " + self.second_name
+
+    def to_json(self):
+        object_json = super().to_json()
+        person_json = {
+            'name': self.name,
+            'second_name': self.second_name,
+            'birthdate': str(self.birthdate),
+            'deathdate': str(self.deathdate) if self.deathdate is not None else None,
+            'related_objects': list(map(lambda o: o.to_base_json(), self.related_objects))
+        }
+
+        return {
+            **object_json,
+            **person_json
+        }

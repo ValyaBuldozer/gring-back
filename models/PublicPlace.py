@@ -33,3 +33,17 @@ class PublicPlace(Object):
 
     def get_name(self):
         return self.name
+
+    def to_json(self):
+        object_json = super().to_json()
+        place_json = {
+            'address': self.address,
+            'geolocation': self.geolocation,
+            'timetable': self.timetable
+        }
+
+        return {
+            **object_json,
+            **place_json
+        }
+        

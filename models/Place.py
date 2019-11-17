@@ -18,7 +18,8 @@ class Place(Object):
     address = db.Column(
         db.String(200),
         name="place_address",
-        default="", nullable=False
+        default="",
+        nullable=False
     )
     geolocation_id = db.Column(
         db.Integer,
@@ -34,3 +35,15 @@ class Place(Object):
 
     def get_name(self):
         return self.name
+
+    def to_json(self):
+        object_json = super().to_json()
+        place_json = {
+            'address': self.address,
+            'geolocation': self.geolocation
+        }
+
+        return {
+            **object_json,
+            **place_json
+        }
