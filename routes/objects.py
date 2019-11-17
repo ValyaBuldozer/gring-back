@@ -25,7 +25,7 @@ def get_object_by_id(object_id):
 
     obj = Object.query.get(object_id)
 
-    if (obj is None):
+    if obj is None:
         abort(404, 'Object not found')
 
     return to_json(obj)
