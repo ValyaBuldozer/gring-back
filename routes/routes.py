@@ -12,3 +12,15 @@ def get_routes():
     routes = Route.query.all()
 
     return to_json(routes)
+
+
+@routes_blueprint.route('/routes/<route_id>', methods=['GET'])
+@returns_json
+def get_route_by_id(route_id):
+
+    route = Route.query.get(route_id)
+
+    if route is None:
+        abort(404, 'Route not found')
+
+    return to_json(route)
