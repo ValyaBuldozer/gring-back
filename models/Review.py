@@ -14,14 +14,15 @@ class Review(db.Model):
         db.Integer, db.ForeignKey("object.object_id"), primary_key=True, name="object_id", nullable=False
     )
     object = relationship("Object")
-    rating = db.Column(db.SMALLINT, name="review_raiting", nullable=False)
+    raiting = db.Column(db.SMALLINT, name="review_raiting", nullable=False)
     time = db.Column(db.DateTime, name="review_time", default=datetime.datetime.utcnow, nullable=False)
     text = db.Column(db.Text, name="review_text")
 
     def to_json(self):
         return {
             'user': self.user,
+            'object': self.object_id,
             'time': str(self.time),
-            'raiting': self.rating,
+            'raiting': self.raiting,
             'text': str(self.text) if self.text is not None else None
         }
