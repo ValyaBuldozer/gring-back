@@ -1,7 +1,6 @@
 from flask import Blueprint, request, abort, g
 from util.json import returns_json, to_json
 from models.Place import Place
-from models.Object import Object
 from models.City import City
 from models.Geolocation import Geolocation
 from models.base import get_session
@@ -13,7 +12,7 @@ place_blueptint = Blueprint('places', __name__)
 
 @place_blueptint.route('/places', methods=['GET'])
 @returns_json
-def get_reviews():
+def get_places():
     places = Place.query.all()
 
     return to_json(places)
@@ -41,11 +40,11 @@ def put_new_place():
     content = g.data
 
     if City.query.get(content['city_id']) is None:
-        abort(404, 'City not found')
+        abort(400, 'City with such id not found')
         return
 
     if Geolocation.query.get(content['geolocation_id']) is None:
-        abort(404, 'Geolocation not found')
+        abort(400, 'Geolocation with such id not found')
         return
 
     session = get_session()
@@ -77,11 +76,11 @@ def post_place(object_id):
     content = g.data
 
     if City.query.get(content['city_id']) is None:
-        abort(404, 'City not found')
+        abort(400, 'City with such id not found')
         return
 
     if Geolocation.query.get(content['geolocation_id']) is None:
-        abort(404, 'Geolocation not found')
+        abort(400, 'Geolocation with such id not found')
         return
 
     session = get_session()
