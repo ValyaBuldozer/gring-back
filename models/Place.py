@@ -14,7 +14,11 @@ class Place(Object):
         name="object_id",
         nullable=False
     )
-    name = db.Column(db.String(100), name="place_name", nullable=False)
+    name = db.Column(
+        db.String(100),
+        name="place_name",
+        nullable=False
+    )
     address = db.Column(
         db.String(200),
         name="place_address",
