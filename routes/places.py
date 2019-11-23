@@ -3,6 +3,8 @@ from util.json import returns_json, to_json
 from models.Place import Place
 from models.City import City
 from models.Geolocation import Geolocation
+from models.Category import Category
+from models.CategoryObject import CategoryObject
 from models.base import get_session
 from flask_expects_json import expects_json
 
@@ -27,9 +29,12 @@ put_place_schema = {
         'city_id': {'type': 'integer'},
         'name': {'type': 'string'},
         'address': {'type': 'string'},
-        'geolocation_id': {'type': 'integer'}
+        'latitude': {'type': 'number'},
+        'longtude': {'type': 'number'},
+        'category_id': {'type': 'integer'}
     },
-    'required': ['description', 'city_id', 'name', 'address', 'geolocation_id']
+    'required': ['description', 'city_id', 'name', 'address', 'latitude',
+                 'longtude', 'category_id']
 }
 
 
@@ -43,11 +48,19 @@ def put_new_place():
         abort(400, 'City with such id not found')
         return
 
-    if Geolocation.query.get(content['geolocation_id']) is None:
-        abort(400, 'Geolocation with such id not found')
+    if Category.query.get(content['category_id']) is None:
+        abort(400, 'Category with such id not found')
         return
 
     session = get_session()
+    geolocation = Geolocation(
+        latitude=content['latitude'],
+        longtude=content['longtude']
+    )
+
+    session.add(geolocation)
+    session.flush()
+
     place = Place(
         image_link=content['image_link'],
         audioguide_link=content['audioguide_link'],
@@ -55,10 +68,17 @@ def put_new_place():
         city_id=content['city_id'],
         name=content['name'],
         address=content['address'],
-        geolocation_id=content['geolocation_id']
+        geolocation_id=geolocation.id
     )
 
     session.add(place)
+    session.flush()
+
+    category_object = CategoryObject.insert().values(
+        object_id=place.id,
+        category_id=content['category_id'])
+
+    session.execute(category_object)
     session.commit()
     session.close()
 
@@ -79,8 +99,8 @@ def post_place(object_id):
         abort(400, 'City with such id not found')
         return
 
-    if Geolocation.query.get(content['geolocation_id']) is None:
-        abort(400, 'Geolocation with such id not found')
+    if Category.query.get(content['category_id']) is None:
+        abort(400, 'Category with such id not found')
         return
 
     session = get_session()
@@ -91,8 +111,15 @@ def post_place(object_id):
     place.city_id = content['city_id']
     place.name = content['name']
     place.address = content['address']
-    place.geolocation_id = content['geolocation_id']
+    geolocation = session.query(Geolocation).get(place.geolocation_id)
+    geolocation.latitude = content['latitude']
+    geolocation.longtude = content['longtude']
+    # забивается
+    # чекать в бд: show processlist;
+    category_object = CategoryObject.update(). \
+        where(CategoryObject.c.object_id == object_id).values(category_id=content['category_id'])
 
+    session.execute(category_object)
     session.commit()
     session.close()
 
@@ -109,7 +136,15 @@ def delete_place(object_id):
         abort(404, 'Place not found')
         return
 
+    geolocation = session.query(Geolocation).get(place.geolocation_id)
+    # забивается
+    # чекать в бд: show processlist;
+    category_object = CategoryObject.delete().where(
+        CategoryObject.c.object_id == object_id)
+
     session.delete(place)
+    session.delete(geolocation)
+    session.execute(category_object)
     session.commit()
     session.close()
 
