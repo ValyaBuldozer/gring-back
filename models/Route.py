@@ -10,7 +10,7 @@ class Route(db.Model):
     name = db.Column(db.String(100), name="route_name", nullable=False)
     description = db.Column(db.Text, name="route_description", nullable=False)
     objects = relationship(
-        "Object", secondary=RouteObjectInfo, order_by=RouteObjectInfo.c.route_object_order
+        "RouteObjectInfo", order_by=RouteObjectInfo.__table__.c.route_object_order
     )
 
     def to_json(self):
@@ -18,5 +18,5 @@ class Route(db.Model):
             'id': self.id,
             'name': self.name,
             'description': self.description,
-            'objects': list(map(lambda o: o.to_base_json(), self.objects))
+            'objects': self.objects
         }
