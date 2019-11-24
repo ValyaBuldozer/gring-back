@@ -16,7 +16,8 @@ class HistoricalPerson(Object):
     patronymic = db.Column(db.String(30), name="person_patronymic", nullable=False, default="")
     birthdate = db.Column(db.Date, name="person_birthdate", nullable=False)
     deathdate = db.Column(db.Date, name="person_deathdate")
-    related_objects = relationship("Object", secondary=HistoricalPersonRelatedObjects)
+    related_objects = relationship("Object", secondary=HistoricalPersonRelatedObjects,
+                                   cascade="all, delete-orphan", single_parent=True)
 
     __mapper_args__ = {
         'polymorphic_identity': ObjectType.historical_person
@@ -34,6 +35,7 @@ class HistoricalPerson(Object):
         person_json = {
             'name': self.name,
             'second_name': self.second_name,
+            'patronymic': self.patronymic if self.patronymic is not '' else None,
             'birthdate': str(self.birthdate),
             'deathdate': str(self.deathdate) if self.deathdate is not None else None,
             'related_objects': list(map(lambda o: o.to_base_json(), self.related_objects))

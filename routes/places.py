@@ -4,7 +4,6 @@ from models.Place import Place
 from models.City import City
 from models.Geolocation import Geolocation
 from models.Category import Category
-from models.CategoryObject import CategoryObject
 from models.base import get_session
 from flask_expects_json import expects_json
 
@@ -20,6 +19,17 @@ def get_places():
     return to_json(places)
 
 
+@place_blueptint.route('/places/<object_id>', methods=['GET'])
+@returns_json
+def get_place_by_id(object_id):
+    place = Place.query.get(object_id)
+
+    if place is None:
+        abort(404, 'Place not found')
+
+    return to_json(place)
+
+
 put_place_schema = {
     'type': 'object',
     'properties': {
@@ -29,16 +39,20 @@ put_place_schema = {
         'city_id': {'type': 'integer'},
         'name': {'type': 'string'},
         'address': {'type': 'string'},
-        'latitude': {'type': 'number'},
-        'longtude': {'type': 'number'},
-        'category_id': {'type': 'integer'}
+        'latitude': {'type': 'number', "minimum": -90, "maximum": 90},
+        'longtude': {'type': 'number', "minimum": -180, "maximum": 180},
+        'categories': {
+            'type': 'array',
+            'item': {'type': 'integer'},
+            "minItems": 1
+        }
     },
     'required': ['description', 'city_id', 'name', 'address', 'latitude',
-                 'longtude', 'category_id']
+                 'longtude', 'categories']
 }
 
 
-@place_blueptint.route('/places', methods=['PUT'])
+@place_blueptint.route('/places/', methods=['PUT'])
 @expects_json(put_place_schema)
 @returns_json
 def put_new_place():
@@ -48,18 +62,24 @@ def put_new_place():
         abort(400, 'City with such id not found')
         return
 
-    if Category.query.get(content['category_id']) is None:
-        abort(400, 'Category with such id not found')
-        return
-
     session = get_session()
     geolocation = Geolocation(
         latitude=content['latitude'],
         longtude=content['longtude']
     )
 
-    session.add(geolocation)
-    session.flush()
+    categories = []
+
+    for category_id in content['categories']:
+        category = session.query(Category).get(category_id)
+
+        if category is None:
+            session.rollback()
+            session.close()
+            abort(400, 'Category not found')
+            return
+
+        categories.append(category)
 
     place = Place(
         image_link=content['image_link'],
@@ -68,17 +88,12 @@ def put_new_place():
         city_id=content['city_id'],
         name=content['name'],
         address=content['address'],
-        geolocation_id=geolocation.id
+        geolocation=geolocation,
+        categories=categories
     )
 
     session.add(place)
-    session.flush()
 
-    category_object = CategoryObject.insert().values(
-        object_id=place.id,
-        category_id=content['category_id'])
-
-    session.execute(category_object)
     session.commit()
     session.close()
 
@@ -88,7 +103,7 @@ def put_new_place():
 @place_blueptint.route('/places/<object_id>', methods=['POST'])
 @expects_json(put_place_schema)
 @returns_json
-def post_place(object_id):
+def post_place_by_id(object_id):
     if Place.query.get(object_id) is None:
         abort(404, 'Place not found')
         return
@@ -97,10 +112,6 @@ def post_place(object_id):
 
     if City.query.get(content['city_id']) is None:
         abort(400, 'City with such id not found')
-        return
-
-    if Category.query.get(content['category_id']) is None:
-        abort(400, 'Category with such id not found')
         return
 
     session = get_session()
@@ -114,12 +125,22 @@ def post_place(object_id):
     geolocation = session.query(Geolocation).get(place.geolocation_id)
     geolocation.latitude = content['latitude']
     geolocation.longtude = content['longtude']
-    # забивается
-    # чекать в бд: show processlist;
-    category_object = CategoryObject.update(). \
-        where(CategoryObject.c.object_id == object_id).values(category_id=content['category_id'])
 
-    session.execute(category_object)
+    categories = []
+
+    for category_id in content['categories']:
+        category = session.query(Category).get(category_id)
+
+        if category is None:
+            session.rollback()
+            session.close()
+            abort(400, 'Category not found')
+            return
+
+        categories.append(category)
+
+    place.categories = categories
+
     session.commit()
     session.close()
 
@@ -128,7 +149,7 @@ def post_place(object_id):
 
 @place_blueptint.route('/places/<object_id>', methods=['DELETE'])
 @returns_json
-def delete_place(object_id):
+def delete_place_by_id(object_id):
     session = get_session()
     place = session.query(Place).get(object_id)
 
@@ -136,15 +157,7 @@ def delete_place(object_id):
         abort(404, 'Place not found')
         return
 
-    geolocation = session.query(Geolocation).get(place.geolocation_id)
-    # забивается
-    # чекать в бд: show processlist;
-    category_object = CategoryObject.delete().where(
-        CategoryObject.c.object_id == object_id)
-
     session.delete(place)
-    session.delete(geolocation)
-    session.execute(category_object)
     session.commit()
     session.close()
 

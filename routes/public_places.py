@@ -4,7 +4,6 @@ from models.PublicPlace import PublicPlace
 from models.City import City
 from models.Geolocation import Geolocation
 from models.Category import Category
-from models.CategoryObject import CategoryObject
 from models.Timetable import Timetable
 from models.WeekDay import WeekDay
 from models.base import get_session
@@ -22,6 +21,17 @@ def get_public_places():
     return to_json(public_places)
 
 
+@public_place_blueptint.route('/public_places/<object_id>', methods=['GET'])
+@returns_json
+def get_public_places_by_id(object_id):
+    public_place = PublicPlace.query.get(object_id)
+
+    if public_place is None:
+        abort(404, 'Public place not found')
+
+    return to_json(public_place)
+
+
 put_public_place_schema = {
     'type': 'object',
     'properties': {
@@ -31,16 +41,19 @@ put_public_place_schema = {
         'city_id': {'type': 'integer'},
         'name': {'type': 'string'},
         'address': {'type': 'string'},
-        'latitude': {'type': 'number'},
-        'longtude': {'type': 'number'},
-        'category_id': {'type': 'integer'},
+        'latitude': {'type': 'number', "minimum": -90, "maximum": 90},
+        'longtude': {'type': 'number', "minimum": -180, "maximum": 180},
+        'categories': {
+            'type': 'array',
+            'item': {'type': 'integer'},
+            "minItems": 1
+        },
         'timetable': {
             'type': 'array',
             'items': {
                 'day': {
-                    "type": "string",
-                    "enum": [WeekDay.mon, WeekDay.tue, WeekDay.wed, WeekDay.thu, WeekDay.fri,
-                             WeekDay.sat, WeekDay.sun]
+                    'type': 'string',
+                    'enum': [e.name for e in WeekDay]
                 },
                 'open_time': {'type': 'string'},
                 'close_time': {'type': 'string'}
@@ -49,11 +62,11 @@ put_public_place_schema = {
         }
     },
     'required': ['description', 'city_id', 'name', 'address', 'latitude',
-                 'longtude', 'category_id', 'timetable']
+                 'longtude', 'categories', 'timetable']
 }
 
 
-@public_place_blueptint.route('/public_places', methods=['PUT'])
+@public_place_blueptint.route('/public_places/', methods=['PUT'])
 @expects_json(put_public_place_schema)
 @returns_json
 def put_new_public_place():
@@ -63,18 +76,33 @@ def put_new_public_place():
         abort(400, 'City with such id not found')
         return
 
-    if Category.query.get(content['category_id']) is None:
-        abort(400, 'Category with such id not found')
-        return
-
     session = get_session()
     geolocation = Geolocation(
         latitude=content['latitude'],
         longtude=content['longtude']
     )
 
-    session.add(geolocation)
-    session.flush()
+    categories = []
+
+    for category_id in content['categories']:
+        category = session.query(Category).get(category_id)
+
+        if category is None:
+            session.rollback()
+            session.close()
+            abort(400, 'Category not found')
+            return
+
+        categories.append(category)
+
+    timetable = []
+
+    for timetable_item in content['timetable']:
+        timetable.append(Timetable(
+            week_day=WeekDay(timetable_item['day']),
+            open_time=timetable_item['open_time'],
+            close_time=timetable_item['close_time'],
+        ))
 
     public_place = PublicPlace(
         image_link=content['image_link'],
@@ -83,26 +111,12 @@ def put_new_public_place():
         city_id=content['city_id'],
         name=content['name'],
         address=content['address'],
-        geolocation_id=geolocation.id,
+        geolocation=geolocation,
+        categories=categories,
+        timetable=timetable
     )
 
     session.add(public_place)
-    session.flush()
-
-    category_object = CategoryObject.insert().values(
-        object_id=public_place.id,
-        category_id=content['category_id'])
-
-    session.execute(category_object)
-
-    for timetable_item in content['timetable']:
-        timetable = Timetable(
-            id=public_place.id,
-            week_day=WeekDay(timetable_item['day']),
-            open_time=timetable_item['open_time'],
-            close_time=timetable_item['close_time'],
-        )
-        session.add(timetable)
 
     session.commit()
     session.close()
@@ -113,7 +127,7 @@ def put_new_public_place():
 @public_place_blueptint.route('/public_places/<object_id>', methods=['POST'])
 @expects_json(put_public_place_schema)
 @returns_json
-def post_place(object_id):
+def post_public_place_by_id(object_id):
     if PublicPlace.query.get(object_id) is None:
         abort(404, 'Place not found')
         return
@@ -122,10 +136,6 @@ def post_place(object_id):
 
     if City.query.get(content['city_id']) is None:
         abort(400, 'City with such id not found')
-        return
-
-    if Category.query.get(content['category_id']) is None:
-        abort(400, 'Category with such id not found')
         return
 
     session = get_session()
@@ -139,30 +149,33 @@ def post_place(object_id):
     geolocation = session.query(Geolocation).get(public_place.geolocation_id)
     geolocation.latitude = content['latitude']
     geolocation.longtude = content['longtude']
-    # забивается
-    # чекать в бд: show processlist;
-    category_object = CategoryObject.update(). \
-        where(CategoryObject.c.object_id == object_id).values(category_id=content['category_id'])
 
-    session.execute(category_object)
+    categories = []
 
-    # 1 или 2
-    # 1
-    # timetable_items = []
+    for category_id in content['categories']:
+        category = session.query(Category).get(category_id)
+
+        if category is None:
+            session.rollback()
+            session.close()
+            abort(400, 'Category not found')
+            return
+
+        categories.append(category)
+
+    public_place.categories = categories
+
+    timetable = []
+
     for timetable_item in content['timetable']:
-        timetable = session.query(Timetable).filter(Timetable.id == public_place.id). \
-            filter(Timetable.week_day == WeekDay(timetable_item['day']))
-        timetable.week_day = WeekDay(timetable_item['day'])
-        timetable.week_day = timetable_item['open_time']
-        timetable.week_day = timetable_item['close_time']
-        # 1
-        # timetable_items.append(timetable)
-        # 2
-        # session.add(timetable)
-        # session.flush()
+        timetable.append(Timetable(
+            week_day=WeekDay(timetable_item['day']),
+            open_time=timetable_item['open_time'],
+            close_time=timetable_item['close_time'],
+        ))
 
-    # 1
-    # session.add(timetable_items)
+    public_place.timetable = timetable
+
     session.commit()
     session.close()
 
@@ -171,27 +184,16 @@ def post_place(object_id):
 
 @public_place_blueptint.route('/public_places/<object_id>', methods=['DELETE'])
 @returns_json
-def delete_public_place(object_id):
+def delete_public_place_by_id(object_id):
     session = get_session()
     public_place = session.query(PublicPlace).get(object_id)
 
     if public_place is None:
-        abort(404, 'Public_place not found')
+        abort(404, 'Public place not found')
         return
 
-    geolocation = session.query(Geolocation).get(public_place.geolocation_id)
-    # забивается
-    # чекать в бд: show processlist;
-    category_object = CategoryObject.delete().where(
-        CategoryObject.c.object_id == object_id)
-
-    session.execute(category_object)
-
-    for timetable_item in session.query(Timetable).filter(Timetable.id == public_place.id):
-        session.delete(timetable_item)
-
     session.delete(public_place)
-    session.delete(geolocation)
+
     session.commit()
     session.close()
 

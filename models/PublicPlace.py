@@ -24,8 +24,8 @@ class PublicPlace(Object):
         name="place_geolocation_id",
         nullable=False
     )
-    geolocation = relationship("Geolocation")
-    timetable = relationship("Timetable")
+    geolocation = relationship("Geolocation", cascade="all, delete-orphan", single_parent=True)
+    timetable = relationship("Timetable", cascade="all, delete-orphan", single_parent=True)
 
     __mapper_args__ = {
         'polymorphic_identity': ObjectType.public_place

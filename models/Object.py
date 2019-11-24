@@ -18,7 +18,7 @@ class Object(db.Model):
         db.Integer, db.ForeignKey("city.city_id"), name="object_city_id", nullable=False
     )
     city = relationship("City")
-    categories = relationship("Category", secondary=CategoryObject)
+    categories = relationship("Category", secondary=CategoryObject, cascade="all, delete-orphan", single_parent=True)
 
     __mapper_args__ = {
         'polymorphic_identity': ObjectType.object,
