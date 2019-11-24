@@ -40,8 +40,14 @@ put_historical_person_schema = {
         'name': {'type': 'string'},
         'second_name': {'type': 'string'},
         'patronymic': {'type': 'string'},
-        'birthdate': {'type': 'string'},
-        'deathdate': {'type': 'string'},
+        'birthdate': {
+            'type': 'string',
+            'format': 'date'
+        },
+        'deathdate': {
+            'type': 'string',
+            'format': 'date'
+        },
         'categories': {
             'type': 'array',
             'item': {'type': 'integer'},
@@ -52,14 +58,15 @@ put_historical_person_schema = {
             'item': {'type': 'integer'}
         },
     },
-    'required': ['image_link', 'description', 'name', 'second_name', 'birthdate', 'categories', 'related_objects']
+    'required': ['image_link', 'description', 'city_id', 'name', 'second_name', 'birthdate', 'categories',
+                 'related_objects']
 }
 
 
 @historical_person_blueptint.route('/historical_persons/', methods=['PUT'])
 @expects_json(put_historical_person_schema)
 @returns_json
-def put_new_place():
+def put_new_hisrorical_person():
     content = g.data
 
     if City.query.get(content['city_id']) is None:
@@ -89,7 +96,7 @@ def put_new_place():
         if object is None:
             session.rollback()
             session.close()
-            abort(400, 'Object not found')
+            abort(400, 'Related object not found')
             return
 
         related_objects.append(object)
@@ -119,7 +126,7 @@ def put_new_place():
 @historical_person_blueptint.route('/historical_persons/<object_id>', methods=['POST'])
 @expects_json(put_historical_person_schema)
 @returns_json
-def post_place_by_id(object_id):
+def post_hisrorical_person_by_id(object_id):
     if HistoricalPerson.query.get(object_id) is None:
         abort(404, 'Historical person not found')
         return
@@ -181,13 +188,17 @@ def post_place_by_id(object_id):
 
 @historical_person_blueptint.route('/historical_persons/<object_id>', methods=['DELETE'])
 @returns_json
-def delete_place_by_id(object_id):
+def delete_hisrorical_person_by_id(object_id):
     session = get_session()
     historical_person = session.query(HistoricalPerson).get(object_id)
+
+    session.close()
 
     if historical_person is None:
         abort(404, 'Historical person not found')
         return
+
+    session = get_session()
 
     session.delete(historical_person)
     session.commit()

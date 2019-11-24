@@ -55,8 +55,14 @@ put_public_place_schema = {
                     'type': 'string',
                     'enum': [e.name for e in WeekDay]
                 },
-                'open_time': {'type': 'string'},
-                'close_time': {'type': 'string'}
+                'open_time': {
+                    'type': 'string',
+                    'format': 'time'
+                },
+                'close_time': {
+                    'type': 'string',
+                    'format': 'time'
+                }
             },
             'required': ['day', 'open_time', 'close_time']
         }
@@ -188,9 +194,13 @@ def delete_public_place_by_id(object_id):
     session = get_session()
     public_place = session.query(PublicPlace).get(object_id)
 
+    session.close()
+
     if public_place is None:
         abort(404, 'Public place not found')
         return
+
+    session = get_session()
 
     session.delete(public_place)
 

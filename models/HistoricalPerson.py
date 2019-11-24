@@ -17,7 +17,7 @@ class HistoricalPerson(Object):
     birthdate = db.Column(db.Date, name="person_birthdate", nullable=False)
     deathdate = db.Column(db.Date, name="person_deathdate")
     related_objects = relationship("Object", secondary=HistoricalPersonRelatedObjects,
-                                   cascade="all, delete-orphan", single_parent=True)
+                                   backref=db.backref('historical_person'))
 
     __mapper_args__ = {
         'polymorphic_identity': ObjectType.historical_person
