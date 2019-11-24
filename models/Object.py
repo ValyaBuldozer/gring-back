@@ -11,7 +11,7 @@ class Object(db.Model):
     __tablename__ = "object"
     id = db.Column(db.Integer, primary_key=True, name="object_id", nullable=False)
     type = db.Column(db.Enum(ObjectType), name="object_type", nullable=False)
-    image_link = db.Column(db.String(250), name="object_image_link")
+    image_link = db.Column(db.String(250), name="object_image_link", nullable=False)
     audioguide_link = db.Column(db.String(250), name="object_audioguide_link")
     description = db.Column(db.Text, name="object_description")
     city_id = db.Column(

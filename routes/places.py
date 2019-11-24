@@ -47,7 +47,7 @@ put_place_schema = {
             "minItems": 1
         }
     },
-    'required': ['description', 'city_id', 'name', 'address', 'latitude',
+    'required': ['image_link', 'description', 'city_id', 'name', 'address', 'latitude',
                  'longtude', 'categories']
 }
 

@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS object (
 	object_id INT NOT NULL AUTO_INCREMENT UNIQUE,
     object_type ENUM('place', 'public_place', 'historical_person') NOT NULL,
     object_city_id INT NOT NULL REFERENCES city(city_id),
-    object_image_link VARCHAR(250),
+    object_image_link VARCHAR(250) NOT NULL,
     object_audioguide_link VARCHAR(250),
     object_description TEXT NOT NULL,
     PRIMARY KEY (object_id)

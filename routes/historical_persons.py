@@ -52,7 +52,7 @@ put_historical_person_schema = {
             'item': {'type': 'integer'}
         },
     },
-    'required': ['description', 'name', 'second_name', 'birthdate', 'categories', 'related_objects']
+    'required': ['image_link', 'description', 'name', 'second_name', 'birthdate', 'categories', 'related_objects']
 }
 
 

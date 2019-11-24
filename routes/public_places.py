@@ -61,7 +61,7 @@ put_public_place_schema = {
             'required': ['day', 'open_time', 'close_time']
         }
     },
-    'required': ['description', 'city_id', 'name', 'address', 'latitude',
+    'required': ['image_link', 'description', 'city_id', 'name', 'address', 'latitude',
                  'longtude', 'categories', 'timetable']
 }
 
