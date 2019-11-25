@@ -21,6 +21,9 @@ from models.UserRole import UserRole
 from routes.objects import object_blueprint
 from routes.routes import routes_blueprint
 from routes.reviews import review_blueptint
+from routes.places import place_blueptint
+from routes.public_places import public_place_blueptint
+from routes.historical_persons import historical_person_blueptint
 
 
 app = Flask(__name__, instance_relative_config=True)
@@ -31,6 +34,9 @@ app.config.from_pyfile('db_config.py')
 app.register_blueprint(object_blueprint)
 app.register_blueprint(routes_blueprint)
 app.register_blueprint(review_blueptint)
+app.register_blueprint(place_blueptint)
+app.register_blueprint(public_place_blueptint)
+app.register_blueprint(historical_person_blueptint)
 
 db.init_app(app)
 

@@ -14,7 +14,11 @@ class Place(Object):
         name="object_id",
         nullable=False
     )
-    name = db.Column(db.String(100), name="place_name", nullable=False)
+    name = db.Column(
+        db.String(100),
+        name="place_name",
+        nullable=False
+    )
     address = db.Column(
         db.String(200),
         name="place_address",
@@ -25,9 +29,9 @@ class Place(Object):
         db.Integer,
         db.ForeignKey("geolocation.geolocation_id"),
         name="place_geolocation_id",
-        nullable=False
+        nullable=False,
     )
-    geolocation = relationship("Geolocation")
+    geolocation = relationship("Geolocation", cascade="all, delete-orphan", single_parent=True)
 
     __mapper_args__ = {
         'polymorphic_identity': ObjectType.place
