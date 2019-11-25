@@ -194,13 +194,10 @@ def delete_public_place_by_id(object_id):
     session = get_session()
     public_place = session.query(PublicPlace).get(object_id)
 
-    session.close()
-
     if public_place is None:
+        session.close()
         abort(404, 'Public place not found')
         return
-
-    session = get_session()
 
     session.delete(public_place)
 

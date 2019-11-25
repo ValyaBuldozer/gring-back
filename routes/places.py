@@ -153,13 +153,10 @@ def delete_place_by_id(object_id):
     session = get_session()
     place = session.query(Place).get(object_id)
 
-    session.close()
-
     if place is None:
+        session.close()
         abort(404, 'Place not found')
         return
-
-    session = get_session()
 
     session.delete(place)
     session.commit()

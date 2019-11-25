@@ -192,13 +192,10 @@ def delete_hisrorical_person_by_id(object_id):
     session = get_session()
     historical_person = session.query(HistoricalPerson).get(object_id)
 
-    session.close()
-
     if historical_person is None:
+        session.close()
         abort(404, 'Historical person not found')
         return
-
-    session = get_session()
 
     session.delete(historical_person)
     session.commit()
