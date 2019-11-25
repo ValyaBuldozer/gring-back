@@ -173,7 +173,7 @@ def post_hisrorical_person_by_id(object_id):
         if object is None:
             session.rollback()
             session.close()
-            abort(400, 'Object not found')
+            abort(400, 'Related object not found')
             return
 
         related_objects.append(object)
