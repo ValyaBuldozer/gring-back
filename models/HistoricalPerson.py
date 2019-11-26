@@ -34,11 +34,11 @@ class HistoricalPerson(Object):
         object_json = super().to_json()
         person_json = {
             'name': self.name,
-            'second_name': self.second_name,
+            'secondName': self.second_name,
             'patronymic': self.patronymic if self.patronymic is not '' else None,
             'birthdate': str(self.birthdate),
             'deathdate': str(self.deathdate) if self.deathdate is not None else None,
-            'related_objects': list(map(lambda o: o.to_base_json(), self.related_objects))
+            'relatedObjects': list(map(lambda o: o.to_base_json(), self.related_objects))
         }
 
         return {

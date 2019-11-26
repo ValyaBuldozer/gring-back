@@ -38,7 +38,7 @@ class Object(db.Model):
             'id': self.id,
             'name': self.get_name(),
             'type': self.type.name,
-            'image_link': self.image_link,
-            'audioguide_link': self.audioguide_link,
+            'image': self.image_link,
+            'audioguide': self.audioguide_link,
             'categories': self.categories
         }

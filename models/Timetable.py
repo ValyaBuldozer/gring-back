@@ -21,6 +21,6 @@ class Timetable(db.Model):
     def to_json(self):
         return {
             'day': self.week_day.name,
-            'open_time': str(self.open_time),
-            'close_time': str(self.close_time)
+            'openTime': str(self.open_time),
+            'closeTime': str(self.close_time)
         }

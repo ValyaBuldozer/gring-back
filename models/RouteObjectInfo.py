@@ -37,5 +37,5 @@ class RouteObjectInfo(db.Model):
         return {
             **object_dict,
             "description": object_dict["description"] if self.description is None else self.description,
-            "audioguide_link": object_dict["audioguide_link"] if self.audioguide is None else self.audioguide
+            "audioguide": object_dict["audioguide"] if self.audioguide is None else self.audioguide
         }

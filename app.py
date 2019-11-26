@@ -31,12 +31,13 @@ app = Flask(__name__, instance_relative_config=True)
 app.config.from_pyfile('config.py')
 app.config.from_pyfile('db_config.py')
 
-app.register_blueprint(object_blueprint)
-app.register_blueprint(routes_blueprint)
-app.register_blueprint(review_blueptint)
-app.register_blueprint(place_blueptint)
-app.register_blueprint(public_place_blueptint)
-app.register_blueprint(historical_person_blueptint)
+api_url_prefix = app.config['API_URL_PREFIX']
+app.register_blueprint(object_blueprint, url_prefix=api_url_prefix)
+app.register_blueprint(routes_blueprint, url_prefix=api_url_prefix)
+app.register_blueprint(review_blueptint, url_prefix=api_url_prefix)
+app.register_blueprint(place_blueptint, url_prefix=api_url_prefix)
+app.register_blueprint(public_place_blueptint, url_prefix=api_url_prefix)
+app.register_blueprint(historical_person_blueptint, url_prefix=api_url_prefix)
 
 db.init_app(app)
 
