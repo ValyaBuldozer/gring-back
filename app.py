@@ -1,5 +1,6 @@
 from flask import Flask, jsonify
 from models.base import db
+import logging
 from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import sessionmaker
 from models.Category import Category
@@ -53,3 +54,8 @@ def page_not_found(e):
 @app.errorhandler(400)
 def invalid_request(e):
     return jsonify(error=400, text=str(e)), 400
+
+
+if __name__ == '__main__':
+    logging.basicConfig(filename='gring.log', level=logging.DEBUG)
+    app.run(host="0.0.0.0", port="5000")
