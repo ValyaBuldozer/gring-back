@@ -14,4 +14,10 @@ __pycache__/
 # db config
 instance/db_config.py
 
+# logs
+*.log
+
+# assets
+assets/
+
 Pipfile.lock

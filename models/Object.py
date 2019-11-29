@@ -3,6 +3,7 @@ from models.ObjectType import ObjectType
 from sqlalchemy.orm import relationship
 from models.CategoryObject import CategoryObject
 from abc import ABCMeta, abstractmethod
+from statistics import mean
 
 
 class Object(db.Model):
@@ -19,6 +20,7 @@ class Object(db.Model):
     )
     city = relationship("City")
     categories = relationship("Category", secondary=CategoryObject, single_parent=True, backref=db.backref('object'))
+    reviews = relationship("Review", cascade="all, delete-orphan", single_parent=True)
 
     __mapper_args__ = {
         'polymorphic_identity': ObjectType.object,
@@ -28,6 +30,12 @@ class Object(db.Model):
     @abstractmethod
     def get_name():
         raise NotImplementedError("Must override method get_name")
+
+    def avg_rating(self):
+        if len(self.reviews) < 1:
+            return 0
+
+        return round(mean(map(lambda r: r.rating, self.reviews)), 2)
 
     def to_json(self):
         return self.to_base_json()
@@ -40,5 +48,9 @@ class Object(db.Model):
             'type': self.type.name,
             'image': self.image_link,
             'audioguide': self.audioguide_link,
-            'categories': self.categories
+            'categories': self.categories,
+            'rating': {
+                'average': self.avg_rating(),
+                'count': len(self.reviews)
+            }
         }

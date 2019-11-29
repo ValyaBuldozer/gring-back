@@ -14,7 +14,7 @@ class Review(db.Model):
         db.Integer, db.ForeignKey("object.object_id"), primary_key=True, name="object_id", nullable=False
     )
     object = relationship("Object")
-    raiting = db.Column(db.SMALLINT, name="review_raiting", nullable=False)
+    rating = db.Column(db.SMALLINT, name="review_rating", nullable=False)
     time = db.Column(db.DateTime, name="review_time", default=datetime.datetime.utcnow, nullable=False)
     text = db.Column(db.Text, name="review_text")
 

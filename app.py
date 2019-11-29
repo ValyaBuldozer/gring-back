@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory
 from models.base import db
 import logging
 from sqlalchemy.orm.query import Query
@@ -54,6 +54,11 @@ def page_not_found(e):
 @app.errorhandler(400)
 def invalid_request(e):
     return jsonify(error=400, text=str(e)), 400
+
+
+@app.route('/assets/<path:path>', methods=['GET'])
+def get_asset(path):
+    return send_from_directory(app.config['ASSETS_PATH'], path)
 
 
 if __name__ == '__main__':
