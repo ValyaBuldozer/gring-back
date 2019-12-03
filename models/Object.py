@@ -21,6 +21,7 @@ class Object(db.Model):
     city = relationship("City")
     categories = relationship("Category", secondary=CategoryObject, single_parent=True, backref=db.backref('object'))
     reviews = relationship("Review", cascade="all, delete-orphan", single_parent=True)
+    routes = relationship("RouteObjectInfo", cascade="all, delete-orphan", single_parent=True)
 
     __mapper_args__ = {
         'polymorphic_identity': ObjectType.object,
@@ -49,6 +50,8 @@ class Object(db.Model):
             'image': self.image_link,
             'audioguide': self.audioguide_link,
             'categories': self.categories,
+            'description': self.description,
+            'routes': list(map(lambda r: r.route_id, self.routes)) if self.type != ObjectType.historical_person else None,
             'rating': {
                 'average': self.avg_rating(),
                 'count': len(self.reviews)

@@ -13,9 +13,13 @@ routes_blueprint = Blueprint('routes', __name__)
 @routes_blueprint.route('/routes', methods=['GET'])
 @returns_json
 def get_routes():
-    routes = Route.query.all()
+    object_id = request.args.get('object')
 
-    return to_json(routes)
+    routes = Route.query.filter(
+        Route.objects.any(RouteObjectInfo.object_id == object_id) if object_id is not None else True
+    ).all()
+
+    return to_json(routes, lambda r: r.to_view_json())
 
 
 @routes_blueprint.route('/routes/<route_id>', methods=['GET'])

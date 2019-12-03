@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS user (
 CREATE TABLE IF NOT EXISTS review (
 	user_id INT NOT NULL REFERENCES user(user_id),
     object_id INT NOT NULL REFERENCES object(object_id),
-    review_raiting TINYINT NOT NULL,
+    review_rating TINYINT NOT NULL,
     review_time DATETIME NOT NULL DEFAULT NOW(),
     review_text TEXT,
     PRIMARY KEY (user_id, object_id)
@@ -139,22 +139,15 @@ BEGIN
     FROM object NATURAL JOIN city;
 END//
 
-DROP PROCEDURE IF EXISTS get_route_objects //
-
-CREATE PROCEDURE get_route_objects(IN target_route_id INT)
-BEGIN
-	SELECT object_id, object_type, object_audioguide, object_description, 
-END//
-
 # TRIGGERS
 
-DROP TRIGGER IF EXISTS review_raiting_range_check //
+DROP TRIGGER IF EXISTS review_rating_range_check //
 
-CREATE TRIGGER review_raiting_range_check 
+CREATE TRIGGER review_rating_range_check 
 BEFORE INSERT ON review FOR EACH ROW
 BEGIN 
-	IF NEW.review_raiting > 5 OR NEW.review_raiting < 1 THEN
-		CALL raise_error('Invalid review raiting value');
+	IF NEW.review_rating > 5 OR NEW.review_rating < 1 THEN
+		CALL raise_error('Invalid review rating value');
 	END IF;
 END//
 	
