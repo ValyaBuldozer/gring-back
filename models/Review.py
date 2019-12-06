@@ -23,6 +23,6 @@ class Review(db.Model):
             'user': self.user,
             'object': self.object_id,
             'time': str(self.time),
-            'raiting': self.raiting,
+            'rating': self.rating,
             'text': str(self.text) if self.text is not None else None
         }
