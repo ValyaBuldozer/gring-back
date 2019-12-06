@@ -1,6 +1,6 @@
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, send_from_directory, request, abort
 from models.base import db
-import logging
+from flask_jwt_extended import JWTManager
 from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import sessionmaker
 from models.Category import Category
@@ -19,6 +19,7 @@ from models.User import User
 from models.Review import Review
 from models.Role import Role
 from models.UserRole import UserRole
+from routes.auth import auth_blueprint
 from routes.objects import object_blueprint
 from routes.routes import routes_blueprint
 from routes.reviews import review_blueptint
@@ -30,9 +31,11 @@ from routes.historical_persons import historical_person_blueptint
 app = Flask(__name__, instance_relative_config=True)
 
 app.config.from_pyfile('config.py')
-app.config.from_pyfile('db_config.py')
+# db config + secret key
+app.config.from_pyfile('secret_config.py')
 
 api_url_prefix = app.config['API_URL_PREFIX']
+app.register_blueprint(auth_blueprint, url_prefix=api_url_prefix)
 app.register_blueprint(object_blueprint, url_prefix=api_url_prefix)
 app.register_blueprint(routes_blueprint, url_prefix=api_url_prefix)
 app.register_blueprint(review_blueptint, url_prefix=api_url_prefix)
@@ -41,6 +44,7 @@ app.register_blueprint(public_place_blueptint, url_prefix=api_url_prefix)
 app.register_blueprint(historical_person_blueptint, url_prefix=api_url_prefix)
 
 db.init_app(app)
+jwt = JWTManager(app)
 
 with app.app_context():
     db.create_all()

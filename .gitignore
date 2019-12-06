@@ -11,8 +11,8 @@ __pycache__/
 .vscode/
 !.vscode/launch.json
 
-# db config
-instance/db_config.py
+# secret config
+instance/secret_config.py
 
 # logs
 *.log
