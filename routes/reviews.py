@@ -15,10 +15,11 @@ review_blueptint = Blueprint('reviews', __name__)
 @returns_json
 def get_reviews():
     object_id = request.args.get('object')
+    limit = request.args.get('limit')
 
     reviews = Review.query.filter(
         Review.object_id == object_id if object_id is not None else True
-    ).all()
+    ).limit(limit).all()
 
     return to_json(reviews)
 

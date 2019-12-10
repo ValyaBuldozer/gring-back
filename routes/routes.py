@@ -75,9 +75,9 @@ def put_new_route():
 
         objects.append(RouteObjectInfo(
             object_id=object_info['id'],
-            description=object_info['description'],
+            description=object_info.get('description', None),
             order=index,
-            audioguide=object_info['audioguide']
+            audioguide=object_info.get('audioguide', None)
         ))
 
     session.add(Route(
