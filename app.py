@@ -1,6 +1,8 @@
 from flask import Flask, jsonify, send_from_directory, request, abort
 from models.base import db
 from flask_jwt_extended import JWTManager
+import os
+import logging
 from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import sessionmaker
 from models.Category import Category
@@ -50,6 +52,22 @@ with app.app_context():
     db.create_all()
 
 
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_fe(path):
+    path_dir = os.path.abspath(app.config['FE_BUILD_PATH'])
+
+    if path != "" and os.path.exists(os.path.join(path_dir, path)):
+        return send_from_directory(os.path.join(path_dir), path)
+    else:
+        return send_from_directory(os.path.join(path_dir), 'index.html')
+
+
+@app.route('/assets/<path:path>', methods=['GET'])
+def get_asset(path):
+    return send_from_directory(app.config['ASSETS_PATH'], path)
+
+
 @app.errorhandler(404)
 def page_not_found(e):
     return jsonify(error=404, text=str(e)), 404
@@ -58,11 +76,6 @@ def page_not_found(e):
 @app.errorhandler(400)
 def invalid_request(e):
     return jsonify(error=400, text=str(e)), 400
-
-
-@app.route('/assets/<path:path>', methods=['GET'])
-def get_asset(path):
-    return send_from_directory(app.config['ASSETS_PATH'], path)
 
 
 if __name__ == '__main__':

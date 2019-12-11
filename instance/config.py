@@ -1,6 +1,7 @@
 # common Flask env config
 API_URL_PREFIX = '/api'
 ASSETS_PATH = './assets'
+FE_BUILD_PATH = './build'
 
 JWT_TOKEN_LOCATION = ['cookies']
 JWT_ACCESS_COOKIE_PATH = '/api/'
