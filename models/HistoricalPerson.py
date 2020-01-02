@@ -1,6 +1,6 @@
 from models.base import db
 from sqlalchemy.orm import relationship
-from models.ObjectType import ObjectType
+from models.EntityType import EntityType
 from models.Object import Object
 from models.HistoricalPersonRelatedObjects import HistoricalPersonRelatedObjects
 
@@ -20,7 +20,7 @@ class HistoricalPerson(Object):
                                    backref=db.backref('historical_person'))
 
     __mapper_args__ = {
-        'polymorphic_identity': ObjectType.historical_person
+        'polymorphic_identity': EntityType.historical_person
     }
 
     def get_name(self):

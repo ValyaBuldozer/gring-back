@@ -1,3 +1,9 @@
+ CREATE TABLE IF NOT EXISTS entity (
+	entity_id INT AUTO_INCREMENT NOT NULL UNIQUE,
+    entity_type ENUM('route', 'object', 'place', 'public_place', 'historical_person') NOT NULL,
+    PRIMARY KEY (entity_id)
+ );
+ 
  CREATE TABLE IF NOT EXISTS category (
 	category_id INT AUTO_INCREMENT NOT NULL UNIQUE,
     category_name VARCHAR(40) NOT NULL UNIQUE,
@@ -14,7 +20,7 @@ CREATE TABLE IF NOT EXISTS city (
 );
     
 CREATE TABLE IF NOT EXISTS object (
-	object_id INT NOT NULL AUTO_INCREMENT UNIQUE,
+	object_id INT NOT NULL UNIQUE REFERENCES entity(entity_id),
     object_type ENUM('place', 'public_place', 'historical_person') NOT NULL,
     object_city_id INT NOT NULL REFERENCES city(city_id),
     object_image_link VARCHAR(250) NOT NULL,
@@ -77,7 +83,7 @@ CREATE TABLE IF NOT EXISTS historical_person_related_objects (
 );
 
 CREATE TABLE IF NOT EXISTS route (
-	route_id INT NOT NULL AUTO_INCREMENT UNIQUE,
+	route_id INT NOT NULL UNIQUE REFERENCES entity(entity_id),
     route_name VARCHAR(100) NOT NULL,
     route_description TEXT NOT NULL,
     PRIMARY KEY (route_id)
@@ -102,11 +108,11 @@ CREATE TABLE IF NOT EXISTS user (
 
 CREATE TABLE IF NOT EXISTS review (
 	user_id INT NOT NULL REFERENCES user(user_id),
-    object_id INT NOT NULL REFERENCES object(object_id),
+    entity_id INT NOT NULL REFERENCES entity(entity_id),
     review_rating TINYINT NOT NULL,
     review_time DATETIME NOT NULL DEFAULT NOW(),
     review_text TEXT,
-    PRIMARY KEY (user_id, object_id)
+    PRIMARY KEY (user_id, entity_id)
 );
 
 CREATE TABLE IF NOT EXISTS role (
@@ -150,66 +156,6 @@ BEGIN
 		CALL raise_error('Invalid review rating value');
 	END IF;
 END//
-	
-DROP TRIGGER IF EXISTS object_category_type_check //
-
-CREATE TRIGGER object_category_type_check
-BEFORE INSERT ON category_object FOR EACH ROW
-BEGIN
-	IF NOT EXISTS (
-		SELECT *
-        FROM (
-			SELECT object_type FROM category WHERE category_id = NEW.category_id
-		) AS inserted_type 
-        NATURAL JOIN (
-			SELECT object_type FROM object WHERE object_id = NEW.object_id
-        ) AS inserted_object
-    ) THEN 
-		CALL raise_error('Incomparable category and type in object.');
-	END IF;
-END //
-
-DROP TRIGGER IF EXISTS place_object_type_check //
-
-CREATE TRIGGER place_object_type_check 
-BEFORE INSERT ON place FOR EACH ROW
-BEGIN
-	IF NOT EXISTS (
-		SELECT object_id 
-        FROM object 
-        WHERE object_id = NEW.object_id AND object_type = 'place'
-    ) THEN 
-		CALL raise_error('Invalid object type in parent object table.');
-	END IF;
-END //
-
-DROP TRIGGER IF EXISTS public_place_object_type_check //
-
-CREATE TRIGGER public_place_object_type_check 
-BEFORE INSERT ON public_place FOR EACH ROW
-BEGIN
-	IF NOT EXISTS (
-		SELECT object_id 
-        FROM object 
-        WHERE object_id = NEW.object_id AND object_type = 'public_place'
-    ) THEN 
-		CALL raise_error('Invalid object type in parent object table.');
-	END IF;
-END //
-
-DROP TRIGGER IF EXISTS historical_person_object_type_check //
-
-CREATE TRIGGER historical_person_object_type_check 
-BEFORE INSERT ON historical_person FOR EACH ROW
-BEGIN
-	IF NOT EXISTS (
-		SELECT object_id 
-        FROM object 
-        WHERE object_id = NEW.object_id AND object_type = 'historical_person'
-    ) THEN 
-		CALL raise_error('Invalid object type in parent object table.');
-	END IF;
-END //
 
 DROP TRIGGER IF EXISTS historical_person_death_date_check //
 
@@ -228,8 +174,8 @@ BEFORE INSERT ON historical_person_related_objects FOR EACH ROW
 BEGIN
 	IF EXISTS (
 		SELECT object_id 
-        FROM object
-        WHERE object_id = NEW.object_id AND object_type = 'historical_person'
+        FROM object NATURAL JOIN entity
+        WHERE object_id = NEW.object_id AND entity.entity_type = 'historical_person'
     ) THEN 
 		CALL raise_error('You can\'t add another person in related with historical person list.');
 	END IF;
@@ -266,8 +212,8 @@ BEFORE INSERT ON route_object_info FOR EACH ROW
 BEGIN 
 	IF EXISTS (
 		SELECT *
-        FROM object
-        WHERE object_id = NEW.object_id AND object_type = 'historical_person'
+        FROM object NATURAL JOIN entity
+        WHERE object_id = NEW.object_id AND entity.entity_id = 'historical_person'
 	) THEN
 		CALL raise_error('Objects with type historical_person can\t be added to route');
 	END IF;

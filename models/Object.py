@@ -1,17 +1,24 @@
 from models.base import db
-from models.ObjectType import ObjectType
+from models.EntityType import EntityType
 from sqlalchemy.orm import relationship
+from models.Entity import Entity
 from models.CategoryObject import CategoryObject
 from abc import ABCMeta, abstractmethod
 from statistics import mean
 
 
-class Object(db.Model):
+class Object(Entity):
 
     __metaclass__ = ABCMeta
     __tablename__ = "object"
-    id = db.Column(db.Integer, primary_key=True, name="object_id", nullable=False)
-    type = db.Column(db.Enum(ObjectType), name="object_type", nullable=False)
+    id = db.Column(
+        db.Integer,
+        db.ForeignKey("entity.entity_id"),
+        primary_key=True,
+        name="object_id",
+        nullable=False
+    )
+    #type = db.Column(db.Enum(EntityType), name="object_type", nullable=False)
     image_link = db.Column(db.String(250), name="object_image_link", nullable=False)
     audioguide_link = db.Column(db.String(250), name="object_audioguide_link")
     description = db.Column(db.Text, name="object_description")
@@ -24,8 +31,7 @@ class Object(db.Model):
     routes = relationship("RouteObjectInfo", cascade="all, delete-orphan", single_parent=True)
 
     __mapper_args__ = {
-        'polymorphic_identity': ObjectType.object,
-        'polymorphic_on': type
+        'polymorphic_identity': EntityType.object
     }
 
     @abstractmethod
@@ -51,7 +57,7 @@ class Object(db.Model):
             'audioguide': self.audioguide_link,
             'categories': self.categories,
             'description': self.description,
-            'routes': list(map(lambda r: r.route_id, self.routes)) if self.type != ObjectType.historical_person else None,
+            'routes': list(map(lambda r: r.route_id, self.routes)) if self.type != EntityType.historical_person else None,
             'rating': {
                 'average': self.avg_rating(),
                 'count': len(self.reviews)

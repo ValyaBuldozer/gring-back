@@ -1,5 +1,5 @@
 from models.base import db
-from models.ObjectType import ObjectType
+from models.EntityType import EntityType
 from models.Object import Object
 from sqlalchemy.orm import relationship
 
@@ -34,7 +34,7 @@ class Place(Object):
     geolocation = relationship("Geolocation", cascade="all, delete-orphan", single_parent=True)
 
     __mapper_args__ = {
-        'polymorphic_identity': ObjectType.place
+        'polymorphic_identity': EntityType.place
     }
 
     def get_name(self):

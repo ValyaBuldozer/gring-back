@@ -18,7 +18,7 @@ def get_reviews():
     limit = request.args.get('limit')
 
     reviews = Review.query.filter(
-        Review.object_id == object_id if object_id is not None else True
+        Review.entity_id == object_id if object_id is not None else True
     ).limit(limit).all()
 
     return to_json(reviews)
