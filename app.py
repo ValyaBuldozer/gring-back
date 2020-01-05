@@ -52,6 +52,17 @@ with app.app_context():
     db.create_all()
 
 
+@app.route(api_url_prefix + '/<path:path>')
+def not_found_api(path):
+    abort(404)
+    return
+
+
+@app.route('/assets/<path:path>', methods=['GET'])
+def get_asset(path):
+    return send_from_directory(app.config['ASSETS_PATH'], path)
+
+
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve_fe(path):
@@ -61,11 +72,6 @@ def serve_fe(path):
         return send_from_directory(os.path.join(path_dir), path)
     else:
         return send_from_directory(os.path.join(path_dir), 'index.html')
-
-
-@app.route('/assets/<path:path>', methods=['GET'])
-def get_asset(path):
-    return send_from_directory(app.config['ASSETS_PATH'], path)
 
 
 @app.errorhandler(404)
