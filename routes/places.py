@@ -14,20 +14,32 @@ place_blueptint = Blueprint('places', __name__)
 @place_blueptint.route('/places', methods=['GET'])
 @returns_json
 def get_places():
-    places = Place.query.all()
+    session = get_session()
 
-    return to_json(places)
+    places = session.query(Place).all()
+
+    json_places = to_json(places)
+
+    session.close()
+
+    return json_places
 
 
 @place_blueptint.route('/places/<object_id>', methods=['GET'])
 @returns_json
 def get_place_by_id(object_id):
-    place = Place.query.get(object_id)
+    session = get_session()
+
+    place = session.query(Place).get(object_id)
 
     if place is None:
-        abort(404, 'Place not found')
+        abort(400, "Place with id = %s not found" % object_id)
 
-    return to_json(place)
+    json_place = to_json(place)
+
+    session.close()
+
+    return json_place
 
 
 put_place_schema = {
@@ -59,7 +71,7 @@ def put_new_place():
     content = g.data
 
     if City.query.get(content['city_id']) is None:
-        abort(400, 'City with such id not found')
+        abort(400, "City with id = %s not found" % content['city_id'])
         return
 
     session = get_session()
@@ -76,7 +88,7 @@ def put_new_place():
         if category is None:
             session.rollback()
             session.close()
-            abort(400, 'Category not found')
+            abort(400, "Category with id = %s not found" % category_id)
             return
 
         categories.append(category)
@@ -105,13 +117,13 @@ def put_new_place():
 @returns_json
 def post_place_by_id(object_id):
     if Place.query.get(object_id) is None:
-        abort(404, 'Place not found')
+        abort(400, "Place with id = %s not found" % object_id)
         return
 
     content = g.data
 
     if City.query.get(content['city_id']) is None:
-        abort(400, 'City with such id not found')
+        abort(400, "City with id = %s not found" % content['city_id'])
         return
 
     session = get_session()
@@ -134,7 +146,7 @@ def post_place_by_id(object_id):
         if category is None:
             session.rollback()
             session.close()
-            abort(400, 'Category not found')
+            abort(400, "Category with id = %s not found" % category_id)
             return
 
         categories.append(category)
@@ -155,7 +167,7 @@ def delete_place_by_id(object_id):
 
     if place is None:
         session.close()
-        abort(404, 'Place not found')
+        abort(400, "Place with id = %s not found" % object_id)
         return
 
     session.delete(place)

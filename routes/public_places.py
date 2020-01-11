@@ -16,20 +16,32 @@ public_place_blueptint = Blueprint('public_places', __name__)
 @public_place_blueptint.route('/public_places', methods=['GET'])
 @returns_json
 def get_public_places():
-    public_places = PublicPlace.query.all()
+    session = get_session()
 
-    return to_json(public_places)
+    public_places = session.query(PublicPlace).all()
+
+    json_public_places = to_json(public_places)
+
+    session.close()
+
+    return json_public_places
 
 
 @public_place_blueptint.route('/public_places/<object_id>', methods=['GET'])
 @returns_json
 def get_public_places_by_id(object_id):
-    public_place = PublicPlace.query.get(object_id)
+    session = get_session()
+
+    public_place = session.query(PublicPlace).get(object_id)
 
     if public_place is None:
-        abort(404, 'Public place not found')
+        abort(400, "Public place with id = %s not found" % object_id)
 
-    return to_json(public_place)
+    json_public_place = to_json(public_place)
+
+    session.close()
+
+    return json_public_place
 
 
 put_public_place_schema = {
@@ -79,7 +91,7 @@ def put_new_public_place():
     content = g.data
 
     if City.query.get(content['city_id']) is None:
-        abort(400, 'City with such id not found')
+        abort(400, "City with id = %s not found" % content['city_id'])
         return
 
     session = get_session()
@@ -96,7 +108,7 @@ def put_new_public_place():
         if category is None:
             session.rollback()
             session.close()
-            abort(400, 'Category not found')
+            abort(400, "Category with id = %s not found" % category_id)
             return
 
         categories.append(category)
@@ -135,13 +147,13 @@ def put_new_public_place():
 @returns_json
 def post_public_place_by_id(object_id):
     if PublicPlace.query.get(object_id) is None:
-        abort(404, 'Place not found')
+        abort(400, "Public place with id = %s not found" % object_id)
         return
 
     content = g.data
 
     if City.query.get(content['city_id']) is None:
-        abort(400, 'City with such id not found')
+        abort(400, "City with id = %s not found" % content['city_id'])
         return
 
     session = get_session()
@@ -164,7 +176,7 @@ def post_public_place_by_id(object_id):
         if category is None:
             session.rollback()
             session.close()
-            abort(400, 'Category not found')
+            abort(400, "Category with id = %s not found" % category_id)
             return
 
         categories.append(category)
@@ -196,7 +208,7 @@ def delete_public_place_by_id(object_id):
 
     if public_place is None:
         session.close()
-        abort(404, 'Public place not found')
+        abort(400, "Public place with id = %s not found" % object_id)
         return
 
     session.delete(public_place)
