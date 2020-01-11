@@ -13,7 +13,6 @@ routes_blueprint = Blueprint('routes', __name__)
 @routes_blueprint.route('/routes', methods=['GET'])
 @returns_json
 def get_routes():
-
     session = get_session()
 
     object_id = request.args.get('object')
@@ -32,7 +31,6 @@ def get_routes():
 @routes_blueprint.route('/routes/<route_id>', methods=['GET'])
 @returns_json
 def get_route_by_id(route_id):
-
     session = get_session()
 
     route = session.query(Route).get(route_id)
