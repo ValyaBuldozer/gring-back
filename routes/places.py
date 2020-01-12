@@ -33,7 +33,7 @@ def get_place_by_id(object_id):
     place = session.query(Place).get(object_id)
 
     if place is None:
-        abort(400, "Place with id = %s not found" % object_id)
+        abort(404, "Place with id = %s not found" % object_id)
 
     json_place = to_json(place)
 
@@ -117,7 +117,7 @@ def put_new_place():
 @returns_json
 def post_place_by_id(object_id):
     if Place.query.get(object_id) is None:
-        abort(400, "Place with id = %s not found" % object_id)
+        abort(404, "Place with id = %s not found" % object_id)
         return
 
     content = g.data
@@ -167,7 +167,7 @@ def delete_place_by_id(object_id):
 
     if place is None:
         session.close()
-        abort(400, "Place with id = %s not found" % object_id)
+        abort(404, "Place with id = %s not found" % object_id)
         return
 
     session.delete(place)

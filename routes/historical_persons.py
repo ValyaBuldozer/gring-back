@@ -33,7 +33,7 @@ def get_historical_person_by_id(object_id):
     historical_person = session.query(HistoricalPerson).get(object_id)
 
     if historical_person is None:
-        abort(400, "Historical person with id = %s not found" % object_id)
+        abort(404, "Historical person with id = %s not found" % object_id)
 
     json_historical_person = to_json(historical_person)
 
@@ -139,17 +139,16 @@ def put_new_hisrorical_person():
 @expects_json(put_historical_person_schema)
 @returns_json
 def post_hisrorical_person_by_id(object_id):
-    if HistoricalPerson.query.get(object_id) is None:
-        abort(400, "Historical person with id = %s not found" % object_id)
-        return
-
+    session = get_session()
     content = g.data
 
-    if City.query.get(content['city_id']) is None:
-        abort(400, "City with id = %s not found" % content['city_id'])
+    if session.query(HistoricalPerson).get(object_id) is None:
+        abort(404, "Historical person with id = %s not found" % object_id)
         return
 
-    session = get_session()
+    if session.query(City).get(content['city_id']) is None:
+        abort(400, "City with id = %s not found" % content['city_id'])
+        return
 
     historical_person = session.query(HistoricalPerson).get(object_id)
     historical_person.image_link = content['image_link']
@@ -206,7 +205,7 @@ def delete_hisrorical_person_by_id(object_id):
 
     if historical_person is None:
         session.close()
-        abort(400, "'Historical person with id = %s not found" % object_id)
+        abort(404, "'Historical person with id = %s not found" % object_id)
         return
 
     session.delete(historical_person)

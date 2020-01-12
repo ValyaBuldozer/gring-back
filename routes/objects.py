@@ -35,7 +35,7 @@ def get_object_by_id(object_id):
     obj = session.query(Object).get(object_id)
 
     if obj is None:
-        abort(400, "Object with id = %s not found" % object_id)
+        abort(404, "Object with id = %s not found" % object_id)
 
     json_object = to_json(obj)
 

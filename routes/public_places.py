@@ -35,7 +35,7 @@ def get_public_places_by_id(object_id):
     public_place = session.query(PublicPlace).get(object_id)
 
     if public_place is None:
-        abort(400, "Public place with id = %s not found" % object_id)
+        abort(404, "Public place with id = %s not found" % object_id)
 
     json_public_place = to_json(public_place)
 
@@ -147,7 +147,7 @@ def put_new_public_place():
 @returns_json
 def post_public_place_by_id(object_id):
     if PublicPlace.query.get(object_id) is None:
-        abort(400, "Public place with id = %s not found" % object_id)
+        abort(404, "Public place with id = %s not found" % object_id)
         return
 
     content = g.data
@@ -208,7 +208,7 @@ def delete_public_place_by_id(object_id):
 
     if public_place is None:
         session.close()
-        abort(400, "Public place with id = %s not found" % object_id)
+        abort(404, "Public place with id = %s not found" % object_id)
         return
 
     session.delete(public_place)

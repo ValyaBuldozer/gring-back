@@ -36,7 +36,7 @@ def get_route_by_id(route_id):
     route = session.query(Route).get(route_id)
 
     if route is None:
-        abort(400, "Route with id = %s not found" % route_id)
+        abort(404, "Route with id = %s not found" % route_id)
 
     json_route = to_json(route)
 
@@ -108,7 +108,7 @@ def put_new_route():
 @returns_json
 def post_route_by_id(route_id):
     if Route.query.get(route_id) is None:
-        abort(400, "Route with id = %s not found" % route_id)
+        abort(404, "Route with id = %s not found" % route_id)
         return
 
     content = g.data
@@ -141,7 +141,7 @@ def post_route_by_id(route_id):
     return 'ok'
 
 
-@routes_blueprint.route('/routres/<route_id>', methods=['DELETE'])
+@routes_blueprint.route('/routes/<route_id>', methods=['DELETE'])
 @returns_json
 def delete_route_by_id(route_id):
     session = get_session()
@@ -149,7 +149,7 @@ def delete_route_by_id(route_id):
 
     if route is None:
         session.close()
-        abort(400, "Route with id = %s not found" % route_id)
+        abort(404, "Route with id = %s not found" % route_id)
         return
 
     session.delete(route)
