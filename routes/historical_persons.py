@@ -14,20 +14,32 @@ historical_person_blueptint = Blueprint('historical_persons', __name__)
 @historical_person_blueptint.route('/historical_persons', methods=['GET'])
 @returns_json
 def get_historical_persons():
-    historical_persons = HistoricalPerson.query.all()
+    session = get_session()
 
-    return to_json(historical_persons)
+    historical_persons = session.query(HistoricalPerson).all()
+
+    json_historical_persons = to_json(historical_persons)
+
+    session.close()
+
+    return json_historical_persons
 
 
 @historical_person_blueptint.route('/historical_persons/<object_id>', methods=['GET'])
 @returns_json
 def get_historical_person_by_id(object_id):
-    historical_person = HistoricalPerson.query.get(object_id)
+    session = get_session()
+
+    historical_person = session.query(HistoricalPerson).get(object_id)
 
     if historical_person is None:
-        abort(404, 'Historical person not found')
+        abort(404, "Historical person with id = %s not found" % object_id)
 
-    return to_json(historical_person)
+    json_historical_person = to_json(historical_person)
+
+    session.close()
+
+    return json_historical_person
 
 
 put_historical_person_schema = {
@@ -70,7 +82,7 @@ def put_new_hisrorical_person():
     content = g.data
 
     if City.query.get(content['city_id']) is None:
-        abort(400, 'City with such id not found')
+        abort(400, "City with id = %s not found" % content['city_id'])
         return
 
     session = get_session()
@@ -83,7 +95,7 @@ def put_new_hisrorical_person():
         if category is None:
             session.rollback()
             session.close()
-            abort(400, 'Category not found')
+            abort(400, "Category with id = %s not found" % category_id)
             return
 
         categories.append(category)
@@ -96,7 +108,7 @@ def put_new_hisrorical_person():
         if object is None:
             session.rollback()
             session.close()
-            abort(400, 'Related object not found')
+            abort(400, "Related object with id = %s not found" % object_id)
             return
 
         related_objects.append(object)
@@ -127,17 +139,16 @@ def put_new_hisrorical_person():
 @expects_json(put_historical_person_schema)
 @returns_json
 def post_hisrorical_person_by_id(object_id):
-    if HistoricalPerson.query.get(object_id) is None:
-        abort(404, 'Historical person not found')
-        return
-
+    session = get_session()
     content = g.data
 
-    if City.query.get(content['city_id']) is None:
-        abort(400, 'City with such id not found')
+    if session.query(HistoricalPerson).get(object_id) is None:
+        abort(404, "Historical person with id = %s not found" % object_id)
         return
 
-    session = get_session()
+    if session.query(City).get(content['city_id']) is None:
+        abort(400, "City with id = %s not found" % content['city_id'])
+        return
 
     historical_person = session.query(HistoricalPerson).get(object_id)
     historical_person.image_link = content['image_link']
@@ -158,7 +169,7 @@ def post_hisrorical_person_by_id(object_id):
         if category is None:
             session.rollback()
             session.close()
-            abort(400, 'Category not found')
+            abort(400, "Category with id = %s not found" % category_id)
             return
 
         categories.append(category)
@@ -173,7 +184,7 @@ def post_hisrorical_person_by_id(object_id):
         if object is None:
             session.rollback()
             session.close()
-            abort(400, 'Related object not found')
+            abort(400, "Related object with id = %s not found" % object_id)
             return
 
         related_objects.append(object)
@@ -194,7 +205,7 @@ def delete_hisrorical_person_by_id(object_id):
 
     if historical_person is None:
         session.close()
-        abort(404, 'Historical person not found')
+        abort(404, "'Historical person with id = %s not found" % object_id)
         return
 
     session.delete(historical_person)

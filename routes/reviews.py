@@ -17,11 +17,17 @@ def get_reviews():
     object_id = request.args.get('object')
     limit = request.args.get('limit')
 
-    reviews = Review.query.filter(
+    session = get_session()
+
+    reviews = session.query(Review).filter(
         Review.entity_id == object_id if object_id is not None else True
     ).limit(limit).all()
 
-    return to_json(reviews)
+    json_reviews = to_json(reviews)
+
+    session.close()
+
+    return json_reviews
 
 
 put_review_schema = {
