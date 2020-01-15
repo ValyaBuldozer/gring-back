@@ -1,13 +1,23 @@
 from models.base import db
-from models.EntityType import EntityType
+from models.CategoryObject import CategoryObject
+from sqlalchemy.orm import relationship
 
 
 class Category(db.Model):
-
     __tablename__ = "category"
-    id = db.Column(db.Integer, primary_key=True, name="category_id", nullable=False)
-    name = db.Column(db.String(20), name="category_name", nullable=False)
-    object_type = db.Column(db.Enum(EntityType), name="object_type", nullable=False)
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+        name="category_id",
+        nullable=False)
+    name = db.Column(
+        db.String(30),
+        name="category_name",
+        nullable=False)
+    objects = relationship(
+        "Object",
+        secondary=CategoryObject,
+        backref=db.backref('category'))
 
     def to_json(self):
         return {

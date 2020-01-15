@@ -16,7 +16,7 @@ class HistoricalPerson(Object):
     patronymic = db.Column(db.String(30), name="person_patronymic", nullable=False, default="")
     birthdate = db.Column(db.Date, name="person_birthdate", nullable=False)
     deathdate = db.Column(db.Date, name="person_deathdate")
-    related_objects = relationship("Object", secondary=HistoricalPersonRelatedObjects,
+    related_objects = relationship("Object", secondary=HistoricalPersonRelatedObjects, single_parent=True,
                                    backref=db.backref('historical_person'))
 
     __mapper_args__ = {
