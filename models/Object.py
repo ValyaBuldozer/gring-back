@@ -20,13 +20,16 @@ class Object(Entity):
     image_link = db.Column(
         db.String(250),
         name="object_image_link",
-        nullable=False)
+        nullable=False
+    )
     audioguide_link = db.Column(
         db.String(250),
-        name="object_audioguide_link")
+        name="object_audioguide_link"
+    )
     description = db.Column(
         db.Text,
-        name="object_description")
+        name="object_description"
+    )
     city_id = db.Column(
         db.Integer,
         db.ForeignKey("city.city_id"),
@@ -40,15 +43,18 @@ class Object(Entity):
         "Category",
         secondary=CategoryObject,
         single_parent=True,
-        backref=db.backref('object'))
+        backref=db.backref('object')
+    )
     reviews = relationship(
         "Review",
         cascade="all, delete-orphan",
-        single_parent=True)
+        single_parent=True
+    )
     routes = relationship(
         "RouteObjectInfo",
         cascade="all, delete-orphan",
-        single_parent=True)
+        single_parent=True
+    )
 
     __mapper_args__ = {
         'polymorphic_identity': EntityType.object

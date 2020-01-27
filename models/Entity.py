@@ -12,11 +12,13 @@ class Entity(db.Model):
         db.Integer,
         primary_key=True,
         name="entity_id",
-        nullable=False)
+        nullable=False
+    )
     type = db.Column(
         db.Enum(EntityType),
         name="entity_type",
-        nullable=False)
+        nullable=False
+    )
 
     __mapper_args__ = {
         'polymorphic_identity': EntityType.entity,

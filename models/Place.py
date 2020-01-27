@@ -34,7 +34,8 @@ class Place(Object):
     geolocation = relationship(
         "Geolocation",
         cascade="all, delete-orphan",
-        single_parent=True)
+        single_parent=True
+    )
 
     __mapper_args__ = {
         'polymorphic_identity': EntityType.place

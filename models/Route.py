@@ -8,6 +8,7 @@ from models.EntityType import EntityType
 from models.base import get_session
 import osrm
 import requests
+from flask import current_app
 
 
 class Route(Entity):
@@ -23,11 +24,13 @@ class Route(Entity):
     name = db.Column(
         db.String(100),
         name="route_name",
-        nullable=False)
+        nullable=False
+    )
     description = db.Column(
         db.Text,
         name="route_description",
-        nullable=False)
+        nullable=False
+    )
     objects = relationship(
         "RouteObjectInfo",
         order_by=RouteObjectInfo.__table__.c.route_object_order,
@@ -73,8 +76,7 @@ class Route(Entity):
 
         geo_points = geo_points[:-1]
 
-        # car => foot
-        url = 'http://router.project-osrm.org/route/v1/car/' + geo_points
+        url = current_app.config['OSRM_URL'] + geo_points
         payload = {"steps": "true", "geometries": "geojson"}
         response = requests.get(url, params=payload)
         data = response.json()

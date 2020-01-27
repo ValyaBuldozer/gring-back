@@ -8,10 +8,12 @@ UserRole = db.Table(
         "user_id",
         db.Integer,
         db.ForeignKey("user.user_id"),
-        nullable=False),
+        nullable=False
+    ),
     db.Column(
         "role_id",
         db.Integer,
         db.ForeignKey("role.role_id"),
-        nullable=False)
+        nullable=False
+    )
 )

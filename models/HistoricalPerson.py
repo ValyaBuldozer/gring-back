@@ -17,27 +17,34 @@ class HistoricalPerson(Object):
     name = db.Column(
         db.String(20),
         name="person_name",
-        nullable=False)
+        nullable=False
+    )
     second_name = db.Column(
         db.String(30),
         name="person_second_name",
-        nullable=False)
+        nullable=False
+    )
     patronymic = db.Column(
         db.String(30),
         name="person_patronymic",
-        nullable=False, default="")
+        nullable=False,
+        default=""
+    )
     birthdate = db.Column(
         db.Date,
         name="person_birthdate",
-        nullable=False)
+        nullable=False
+    )
     deathdate = db.Column(
         db.Date,
-        name="person_deathdate")
+        name="person_deathdate"
+    )
     related_objects = relationship(
         "Object",
         secondary=HistoricalPersonRelatedObjects,
         single_parent=True,
-        backref=db.backref('historical_person'))
+        backref=db.backref('historical_person')
+    )
 
     __mapper_args__ = {
         'polymorphic_identity': EntityType.historical_person

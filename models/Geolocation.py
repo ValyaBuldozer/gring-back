@@ -7,15 +7,18 @@ class Geolocation(db.Model):
         db.Integer,
         primary_key=True,
         name="geolocation_id",
-        nullable=False)
+        nullable=False
+    )
     latitude = db.Column(
         db.DECIMAL(10, 8),
         name="latitude",
-        nullable=False)
+        nullable=False
+    )
     longtude = db.Column(
         db.DECIMAL(11, 8),
         name="longitude",
-        nullable=False)
+        nullable=False
+    )
 
     def to_json(self):
         return {

@@ -9,15 +9,18 @@ class Category(db.Model):
         db.Integer,
         primary_key=True,
         name="category_id",
-        nullable=False)
+        nullable=False
+    )
     name = db.Column(
         db.String(30),
         name="category_name",
-        nullable=False)
+        nullable=False
+    )
     objects = relationship(
         "Object",
         secondary=CategoryObject,
-        backref=db.backref('category'))
+        backref=db.backref('category')
+    )
 
     def to_json(self):
         return {

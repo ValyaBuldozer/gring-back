@@ -8,8 +8,10 @@ class Role(db.Model):
         db.Integer,
         primary_key=True,
         name="role_id",
-        nullable=False)
+        nullable=False
+    )
     name = db.Column(
         db.String(20),
         name="role_name",
-        nullable=False)
+        nullable=False
+    )

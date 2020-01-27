@@ -8,16 +8,20 @@ class City(db.Model):
         db.Integer,
         primary_key=True,
         name="city_id",
-        nullable=False)
+        nullable=False
+    )
     name = db.Column(
         db.String(30),
         name="city_name",
-        nullable=False)
+        nullable=False
+    )
     image_link = db.Column(
         db.String(250),
         name="city_image_link",
-        nullable=False)
+        nullable=False
+    )
     description = db.Column(
         db.Text,
         name="city_description",
-        nullable=False)
+        nullable=False
+    )

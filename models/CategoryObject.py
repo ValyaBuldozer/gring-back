@@ -7,10 +7,12 @@ CategoryObject = db.Table(
         "object_id",
         db.Integer,
         db.ForeignKey("object.object_id", ondelete="cascade"),
-        nullable=False),
+        nullable=False
+    ),
     db.Column(
         "category_id",
         db.Integer,
         db.ForeignKey("category.category_id", ondelete="cascade"),
-        nullable=False)
+        nullable=False
+    )
 )

@@ -26,7 +26,8 @@ class RouteObjectInfo(db.Model):
     order = db.Column(
         db.Integer,
         name="route_object_order",
-        nullable=False)
+        nullable=False
+    )
     description = db.Column(
         db.Text,
         name="route_object_description",

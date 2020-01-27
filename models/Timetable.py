@@ -20,15 +20,18 @@ class Timetable(db.Model):
         db.Enum(WeekDay),
         name="week_day",
         nullable=False,
-        primary_key=True)
+        primary_key=True
+    )
     open_time = db.Column(
         db.Time,
         name="open_time",
-        nullable=False)
+        nullable=False
+    )
     close_time = db.Column(
         db.Time,
         name="close_time",
-        nullable=False)
+        nullable=False
+    )
 
     def to_json(self):
         return {

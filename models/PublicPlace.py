@@ -33,11 +33,13 @@ class PublicPlace(Object):
     geolocation = relationship(
         "Geolocation",
         cascade="all, delete-orphan",
-        single_parent=True)
+        single_parent=True
+    )
     timetable = relationship(
         "Timetable",
         cascade="all, delete-orphan",
-        single_parent=True)
+        single_parent=True
+    )
 
     __mapper_args__ = {
         'polymorphic_identity': EntityType.public_place

@@ -29,15 +29,18 @@ class Review(db.Model):
     rating = db.Column(
         db.SMALLINT,
         name="review_rating",
-        nullable=False)
+        nullable=False
+    )
     time = db.Column(
         db.DateTime,
         name="review_time",
         default=datetime.datetime.utcnow,
-        nullable=False)
+        nullable=False
+    )
     text = db.Column(
         db.Text,
-        name="review_text")
+        name="review_text"
+    )
 
     def to_json(self):
         return {
