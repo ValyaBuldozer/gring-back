@@ -10,7 +10,9 @@ class RouteObjectInfo(db.Model):
         name="object_id",
         nullable=False
     )
-    object = relationship("Object")
+    object = relationship(
+        "Object"
+    )
     route_id = db.Column(
         db.Integer,
         db.ForeignKey("route.route_id"),
@@ -18,8 +20,13 @@ class RouteObjectInfo(db.Model):
         name="route_id",
         nullable=False
     )
-    route = relationship("Route")
-    order = db.Column(db.Integer, name="route_object_order", nullable=False)
+    route = relationship(
+        "Route"
+    )
+    order = db.Column(
+        db.Integer,
+        name="route_object_order",
+        nullable=False)
     description = db.Column(
         db.Text,
         name="route_object_description",

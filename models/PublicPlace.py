@@ -14,9 +14,15 @@ class PublicPlace(Object):
         name="object_id",
         nullable=False
     )
-    name = db.Column(db.String(100), name="place_name", nullable=False)
+    name = db.Column(
+        db.String(100),
+        name="place_name",
+        nullable=False)
     address = db.Column(
-        db.String(200), name="place_address", default="", nullable=False
+        db.String(200),
+        name="place_address",
+        default="",
+        nullable=False
     )
     geolocation_id = db.Column(
         db.Integer,
@@ -24,8 +30,14 @@ class PublicPlace(Object):
         name="place_geolocation_id",
         nullable=False
     )
-    geolocation = relationship("Geolocation", cascade="all, delete-orphan", single_parent=True)
-    timetable = relationship("Timetable", cascade="all, delete-orphan", single_parent=True)
+    geolocation = relationship(
+        "Geolocation",
+        cascade="all, delete-orphan",
+        single_parent=True)
+    timetable = relationship(
+        "Timetable",
+        cascade="all, delete-orphan",
+        single_parent=True)
 
     __mapper_args__ = {
         'polymorphic_identity': EntityType.public_place

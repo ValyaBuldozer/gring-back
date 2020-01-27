@@ -13,7 +13,9 @@ class Review(db.Model):
         name="user_id",
         nullable=False
     )
-    user = relationship("User")
+    user = relationship(
+        "User"
+    )
     entity_id = db.Column(
         db.Integer,
         db.ForeignKey("entity.entity_id"),
@@ -21,10 +23,21 @@ class Review(db.Model):
         name="entity_id",
         nullable=False
     )
-    entity = relationship("Entity")
-    rating = db.Column(db.SMALLINT, name="review_rating", nullable=False)
-    time = db.Column(db.DateTime, name="review_time", default=datetime.datetime.utcnow, nullable=False)
-    text = db.Column(db.Text, name="review_text")
+    entity = relationship(
+        "Entity"
+    )
+    rating = db.Column(
+        db.SMALLINT,
+        name="review_rating",
+        nullable=False)
+    time = db.Column(
+        db.DateTime,
+        name="review_time",
+        default=datetime.datetime.utcnow,
+        nullable=False)
+    text = db.Column(
+        db.Text,
+        name="review_text")
 
     def to_json(self):
         return {

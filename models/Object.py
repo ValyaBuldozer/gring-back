@@ -8,7 +8,6 @@ from statistics import mean
 
 
 class Object(Entity):
-
     __metaclass__ = ABCMeta
     __tablename__ = "object"
     id = db.Column(
@@ -18,17 +17,38 @@ class Object(Entity):
         name="object_id",
         nullable=False
     )
-    #type = db.Column(db.Enum(EntityType), name="object_type", nullable=False)
-    image_link = db.Column(db.String(250), name="object_image_link", nullable=False)
-    audioguide_link = db.Column(db.String(250), name="object_audioguide_link")
-    description = db.Column(db.Text, name="object_description")
+    image_link = db.Column(
+        db.String(250),
+        name="object_image_link",
+        nullable=False)
+    audioguide_link = db.Column(
+        db.String(250),
+        name="object_audioguide_link")
+    description = db.Column(
+        db.Text,
+        name="object_description")
     city_id = db.Column(
-        db.Integer, db.ForeignKey("city.city_id"), name="object_city_id", nullable=False
+        db.Integer,
+        db.ForeignKey("city.city_id"),
+        name="object_city_id",
+        nullable=False
     )
-    city = relationship("City")
-    categories = relationship("Category", secondary=CategoryObject, single_parent=True, backref=db.backref('object'))
-    reviews = relationship("Review", cascade="all, delete-orphan", single_parent=True)
-    routes = relationship("RouteObjectInfo", cascade="all, delete-orphan", single_parent=True)
+    city = relationship(
+        "City"
+    )
+    categories = relationship(
+        "Category",
+        secondary=CategoryObject,
+        single_parent=True,
+        backref=db.backref('object'))
+    reviews = relationship(
+        "Review",
+        cascade="all, delete-orphan",
+        single_parent=True)
+    routes = relationship(
+        "RouteObjectInfo",
+        cascade="all, delete-orphan",
+        single_parent=True)
 
     __mapper_args__ = {
         'polymorphic_identity': EntityType.object

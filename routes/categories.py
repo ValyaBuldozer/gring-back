@@ -16,7 +16,7 @@ def get_categories():
     session = get_session()
 
     categories = session.query(Category)\
-        .join(CategoryObject)\
+        .outerjoin(CategoryObject)\
         .group_by(Category)\
         .order_by(desc(func.count(CategoryObject.c.object_id)))\
         .all()

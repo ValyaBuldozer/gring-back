@@ -13,10 +13,22 @@ class Timetable(db.Model):
         name="public_place_id",
         nullable=False
     )
-    public_place = relationship("PublicPlace")
-    week_day = db.Column(db.Enum(WeekDay), name="week_day", nullable=False, primary_key=True)
-    open_time = db.Column(db.Time, name="open_time", nullable=False)
-    close_time = db.Column(db.Time, name="close_time", nullable=False)
+    public_place = relationship(
+        "PublicPlace"
+    )
+    week_day = db.Column(
+        db.Enum(WeekDay),
+        name="week_day",
+        nullable=False,
+        primary_key=True)
+    open_time = db.Column(
+        db.Time,
+        name="open_time",
+        nullable=False)
+    close_time = db.Column(
+        db.Time,
+        name="close_time",
+        nullable=False)
 
     def to_json(self):
         return {
