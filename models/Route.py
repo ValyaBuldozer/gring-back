@@ -9,6 +9,7 @@ from models.base import get_session
 import osrm
 import requests
 from flask import current_app
+from models.RoutingMachineInfo import RoutingMachineInfo
 
 
 class Route(Entity):
@@ -42,23 +43,29 @@ class Route(Entity):
         'polymorphic_identity': EntityType.route
     }
 
+    osrm_route_info = RoutingMachineInfo('', '')
+
     def to_json(self):
+        self.osrm_route_info = self.get_osrm_foot_info()
         return {
             **self.to_view_json(),
             'description': self.description,
             'objects': self.objects,
-            'distance': self.get_total_distance()
+            'distance': self.osrm_route_info.distance,
+            'duration': self.osrm_route_info.duration
         }
 
     def to_view_json(self):
+        self.osrm_route_info = self.get_osrm_foot_info()
         return {
             'id': self.id,
             'name': self.name,
             'objectsCount': len(self.objects),
-            'distance': self.get_total_distance()
+            'distance': self.osrm_route_info.distance,
+            'duration': self.osrm_route_info.duration
         }
 
-    def get_total_distance(self):
+    def get_osrm_foot_info(self):
         session = get_session()
 
         geo_points = ""
@@ -76,15 +83,13 @@ class Route(Entity):
 
         geo_points = geo_points[:-1]
 
-        url = current_app.config['OSRM_URL'] + geo_points
+        url = current_app.config['OSRM_URL'] + 'foot/' + geo_points
         payload = {"steps": "true", "geometries": "geojson"}
         response = requests.get(url, params=payload)
         data = response.json()
 
         if 'routes' in data:
-            return data['routes'][0]['distance']
-        else:
-            return ''
+            return RoutingMachineInfo(data['routes'][0]['distance'], data['routes'][0]['duration'])
 
     @staticmethod
     def get_entity_type(entity):
