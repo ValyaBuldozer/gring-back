@@ -16,7 +16,7 @@ from models.Timetable import Timetable
 from models.HistoricalPerson import HistoricalPerson
 from models.HistoricalPersonRelatedObjects import HistoricalPersonRelatedObjects
 from models.Route import Route
-from models.RouteObjectInfo import RouteObjectInfo
+from models.RoutePlaceInfo import RoutePlaceInfo
 from models.User import User
 from models.Review import Review
 from models.Role import Role
@@ -29,6 +29,7 @@ from routes.places import place_blueptint
 from routes.public_places import public_place_blueptint
 from routes.historical_persons import historical_person_blueptint
 from routes.categories import category_blueprint
+from util.osrm_client import osrm_init
 
 
 app = Flask(__name__, instance_relative_config=True)
@@ -52,6 +53,7 @@ jwt = JWTManager(app)
 
 with app.app_context():
     db.create_all()
+    osrm_init()
 
 
 @app.route(api_url_prefix + '/<path:path>')

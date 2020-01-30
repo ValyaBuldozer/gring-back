@@ -2,16 +2,16 @@ from models.base import db
 from sqlalchemy.orm import relationship
 
 
-class RouteObjectInfo(db.Model):
-    object_id = db.Column(
+class RoutePlaceInfo(db.Model):
+    place_id = db.Column(
         db.Integer,
-        db.ForeignKey("object.object_id"),
+        db.ForeignKey("place.object_id"),
         primary_key=True,
-        name="object_id",
+        name="place_id",
         nullable=False
     )
     object = relationship(
-        "Object"
+        "Place"
     )
     route_id = db.Column(
         db.Integer,
@@ -25,17 +25,17 @@ class RouteObjectInfo(db.Model):
     )
     order = db.Column(
         db.Integer,
-        name="route_object_order",
+        name="route_place_order",
         nullable=False
     )
     description = db.Column(
         db.Text,
-        name="route_object_description",
+        name="route_place_description",
         nullable=True
     )
     audioguide = db.Column(
         db.String(250),
-        name="route_object_audioguide_link",
+        name="route_place_audioguide_link",
         nullable=True
     )
 

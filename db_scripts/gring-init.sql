@@ -51,9 +51,6 @@ CREATE TABLE IF NOT EXISTS place (
     
 CREATE TABLE IF NOT EXISTS public_place (
 	object_id INT NOT NULL UNIQUE REFERENCES object(object_id),
-    place_name VARCHAR(100) NOT NULL,
-    place_address VARCHAR(200) NOT NULL DEFAULT '',
-    place_geolocation_id INT NOT NULL REFERENCES geolocation(geolocation_id),
     PRIMARY KEY (object_id)
 );
     
@@ -88,13 +85,13 @@ CREATE TABLE IF NOT EXISTS route (
     PRIMARY KEY (route_id)
 );
 
-CREATE TABLE IF NOT EXISTS route_object_info (
+CREATE TABLE IF NOT EXISTS route_place_info (
 	route_id INT NOT NULL REFERENCES route(route_id),
-    object_id INT NOT NULL REFERENCES object(object_id),
-    route_object_order INT NOT NULL,
-    route_object_description TEXT,
-    route_object_audioguide_link VARCHAR(250),
-    PRIMARY KEY (route_id, object_id)
+    place_id INT NOT NULL REFERENCES place(object_id),
+    route_place_order INT NOT NULL,
+    route_place_description TEXT,
+    route_place_audioguide_link VARCHAR(250),
+    PRIMARY KEY (route_id, place_id)
 );
 
 CREATE TABLE IF NOT EXISTS user (

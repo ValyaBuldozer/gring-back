@@ -12,6 +12,7 @@ flask-sqlalchemy = "*"
 mysqlclient = "*"
 flask-expects-json = "*"
 Flask-JWT = "*"
+osrm-py = "*"
 
 [requires]
 python_version = "3.7"

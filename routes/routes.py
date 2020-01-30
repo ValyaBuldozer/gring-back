@@ -1,7 +1,7 @@
 from flask import Blueprint, request, abort, g
 from util.json import to_json, returns_json
 from models.Route import Route
-from models.RouteObjectInfo import RouteObjectInfo
+from models.RoutePlaceInfo import RoutePlaceInfo
 from models.Object import Object
 from models.base import get_session
 from flask_expects_json import expects_json
@@ -18,7 +18,7 @@ def get_routes():
     object_id = request.args.get('object')
 
     routes = session.query(Route).filter(
-        Route.objects.any(RouteObjectInfo.object_id == object_id) if object_id is not None else True
+        Route.objects.any(RoutePlaceInfo.place_id == object_id) if object_id is not None else True
     ).all()
 
     json_routes = to_json(routes, lambda r: r.to_view_json())
@@ -84,8 +84,8 @@ def put_new_route():
             abort(400, "Object with id = %s not found" % (object_info['id']))
             return
 
-        objects.append(RouteObjectInfo(
-            object_id=object_info['id'],
+        objects.append(RoutePlaceInfo(
+            place_id=object_info['id'],
             description=object_info.get('description', None),
             order=index,
             audioguide=object_info.get('audioguide', None)
@@ -124,8 +124,8 @@ def post_route_by_id(route_id):
             abort(400, "Object with id = %s not found" % (object_info['id']))
             return
 
-        objects.append(RouteObjectInfo(
-            object_id=object_info['id'],
+        objects.append(RoutePlaceInfo(
+            place_id=object_info['id'],
             description=object_info.get('description', None),
             order=index,
             audioguide=object_info.get('audioguide', None)

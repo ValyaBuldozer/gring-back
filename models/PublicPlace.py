@@ -1,39 +1,18 @@
 from models.base import db
 from models.EntityType import EntityType
-from models.Object import Object
+from models.Place import Place
 from sqlalchemy.orm import relationship
 
 
-class PublicPlace(Object):
+class PublicPlace(Place):
 
     __tablename__ = "public_place"
     id = db.Column(
         db.Integer,
-        db.ForeignKey("object.object_id"),
+        db.ForeignKey("place.object_id"),
         primary_key=True,
         name="object_id",
         nullable=False
-    )
-    name = db.Column(
-        db.String(100),
-        name="place_name",
-        nullable=False)
-    address = db.Column(
-        db.String(200),
-        name="place_address",
-        default="",
-        nullable=False
-    )
-    geolocation_id = db.Column(
-        db.Integer,
-        db.ForeignKey("geolocation.geolocation_id"),
-        name="place_geolocation_id",
-        nullable=False
-    )
-    geolocation = relationship(
-        "Geolocation",
-        cascade="all, delete-orphan",
-        single_parent=True
     )
     timetable = relationship(
         "Timetable",
@@ -60,4 +39,3 @@ class PublicPlace(Object):
             **object_json,
             **place_json
         }
-        
