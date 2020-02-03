@@ -10,7 +10,7 @@ class RoutePlaceInfo(db.Model):
         name="place_id",
         nullable=False
     )
-    object = relationship(
+    place = relationship(
         "Place"
     )
     route_id = db.Column(

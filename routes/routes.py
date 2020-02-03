@@ -3,6 +3,7 @@ from util.json import to_json, returns_json
 from models.Route import Route
 from models.RoutePlaceInfo import RoutePlaceInfo
 from models.Object import Object
+from models.Place import Place
 from models.base import get_session
 from flask_expects_json import expects_json
 
@@ -50,7 +51,7 @@ put_route_schema = {
     'properties': {
         'name': {'type': 'string'},
         'description': {'type': 'string'},
-        'objects': {
+        'places': {
             'type': 'array',
             'items': {
                 'type': 'object',
@@ -63,7 +64,7 @@ put_route_schema = {
             }
         }
     },
-    'required': ['name', 'description', 'objects']
+    'required': ['name', 'description', 'places']
 }
 
 
@@ -75,26 +76,26 @@ def put_new_route():
     content = g.data
     session = get_session()
 
-    objects = []
+    places = []
 
-    for index, object_info in enumerate(content['objects']):
-        if session.query(Object).get(object_info['id']) is None:
+    for index, place_info in enumerate(content['places']):
+        if session.query(Place).get(place_info['id']) is None:
             session.rollback()
             session.close()
-            abort(400, "Object with id = %s not found" % (object_info['id']))
+            abort(400, "Place with id = %s not found" % (place_info['id']))
             return
 
-        objects.append(RoutePlaceInfo(
-            place_id=object_info['id'],
-            description=object_info.get('description', None),
+        places.append(RoutePlaceInfo(
+            place_id=place_info['id'],
+            description=place_info.get('description', None),
             order=index,
-            audioguide=object_info.get('audioguide', None)
+            audioguide=place_info.get('audioguide', None)
         ))
 
     session.add(Route(
         name=content['name'],
         description=content['description'],
-        objects=objects
+        places=places
     ))
 
     session.commit()
@@ -115,25 +116,25 @@ def post_route_by_id(route_id):
     session = get_session()
     route = session.query(Route).get(route_id)
 
-    objects = []
+    places = []
 
-    for index, object_info in enumerate(content['objects']):
-        if session.query(Object).get(object_info['id']) is None:
+    for index, place_info in enumerate(content['places']):
+        if session.query(Place).get(place_info['id']) is None:
             session.rollback()
             session.close()
-            abort(400, "Object with id = %s not found" % (object_info['id']))
+            abort(400, "Place with id = %s not found" % (place_info['id']))
             return
 
-        objects.append(RoutePlaceInfo(
-            place_id=object_info['id'],
-            description=object_info.get('description', None),
+        places.append(RoutePlaceInfo(
+            place_id=place_info['id'],
+            description=place_info.get('description', None),
             order=index,
-            audioguide=object_info.get('audioguide', None)
+            audioguide=place_info.get('audioguide', None)
         ))
 
     route.name = content['name']
     route.description = content['description']
-    route.objects = objects
+    route.places = places
 
     session.commit()
     session.close()

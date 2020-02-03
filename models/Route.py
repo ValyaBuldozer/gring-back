@@ -30,11 +30,17 @@ class Route(Entity):
         name="route_description",
         nullable=False
     )
-    objects = relationship(
+    places = relationship(
         "RoutePlaceInfo",
         order_by=RoutePlaceInfo.__table__.c.route_place_order,
         cascade="all, delete-orphan",
         single_parent=True
+    )
+    places_info = relationship(
+        "Place",
+        secondary="route_place_info",
+        single_parent=True,
+        backref=db.backref('route')
     )
 
     __mapper_args__ = {
@@ -45,7 +51,7 @@ class Route(Entity):
         return {
             **self.to_view_json(),
             'description': self.description,
-            'objects': self.objects,
+            'places': self.places,
         }
 
     def to_view_json(self):
@@ -53,7 +59,7 @@ class Route(Entity):
         return {
             'id': self.id,
             'name': self.name,
-            'objectsCount': len(self.objects),
+            'placesCount': len(self.places),
             'distance': distance,
             'duration': duration
         }
@@ -63,11 +69,8 @@ class Route(Entity):
 
         geo_points = []
 
-        for obj in self.objects:
-
-            geo_place = session.query(Place).get(obj.place_id)
-
-            geolocation = geo_place.geolocation
+        for place in self.places_info:
+            geolocation = place.geolocation
 
             geo_point = [geolocation.longtude, geolocation.latitude]
             geo_points.append(geo_point)

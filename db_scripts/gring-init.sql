@@ -190,21 +190,21 @@ END //
 DROP TRIGGER IF EXISTS route_object_info_order_check //
 
 CREATE TRIGGER route_object_info_order_check 
-BEFORE INSERT ON route_object_info FOR EACH ROW
+BEFORE INSERT ON route_place_info FOR EACH ROW
 BEGIN
 	IF EXISTS (
-		SELECT route_object_order
-		FROM route_object_info
-        WHERE object_id = NEW.object_id AND route_id = NEW.route_id AND route_object_order = NEW.route_object_order
+		SELECT route_place_order
+		FROM route_place_info
+        WHERE place_id = NEW.place_id AND route_id = NEW.route_id AND route_place_order = NEW.route_place_order
     ) THEN 
-		CALL raise_error('Object with this order number already exists');
+		CALL raise_error('Place with this order number already exists');
 	END IF;
 END //
 
 DROP TRIGGER IF EXISTS route_object_info_person_check //
 
 CREATE TRIGGER route_object_info_person_check 
-BEFORE INSERT ON route_object_info FOR EACH ROW
+BEFORE INSERT ON route_place_info FOR EACH ROW
 BEGIN 
 	IF EXISTS (
 		SELECT *
