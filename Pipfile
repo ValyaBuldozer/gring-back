@@ -11,8 +11,9 @@ flask = "*"
 flask-sqlalchemy = "*"
 mysqlclient = "*"
 flask-expects-json = "*"
-Flask-JWT = "*"
 osrm-py = "*"
+flask-jwt-extended = "*"
+gunicorn = "*"
 
 [requires]
-python_version = "3.7"
+python_version = "3.6"
