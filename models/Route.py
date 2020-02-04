@@ -72,7 +72,7 @@ class Route(Entity):
         for place in self.places_info:
             geolocation = place.geolocation
 
-            geo_point = [geolocation.longtude, geolocation.latitude]
+            geo_point = [geolocation.longitude, geolocation.latitude]
             geo_points.append(geo_point)
 
         session.close()

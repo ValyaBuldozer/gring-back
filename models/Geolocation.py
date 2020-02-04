@@ -14,7 +14,7 @@ class Geolocation(db.Model):
         name="latitude",
         nullable=False
     )
-    longtude = db.Column(
+    longitude = db.Column(
         db.DECIMAL(11, 8),
         name="longitude",
         nullable=False
@@ -23,5 +23,5 @@ class Geolocation(db.Model):
     def to_json(self):
         return {
             'lat': self.latitude.to_eng_string(),
-            'lng': self.longtude.to_eng_string()
+            'lng': self.longitude.to_eng_string()
         }

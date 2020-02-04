@@ -16,11 +16,11 @@ class Category(db.Model):
         name="category_name",
         nullable=False
     )
-    objects = relationship(
-        "Object",
-        secondary=CategoryObject,
-        backref=db.backref('category')
-    )
+    # objects = relationship(
+    #     "Object",
+    #     secondary=CategoryObject,
+    #     backref=db.backref('category')
+    # )
 
     def to_json(self):
         return {

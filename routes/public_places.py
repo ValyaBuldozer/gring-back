@@ -54,7 +54,7 @@ put_public_place_schema = {
         'name': {'type': 'string'},
         'address': {'type': 'string'},
         'latitude': {'type': 'number', "minimum": -90, "maximum": 90},
-        'longtude': {'type': 'number', "minimum": -180, "maximum": 180},
+        'longitude': {'type': 'number', "minimum": -180, "maximum": 180},
         'categories': {
             'type': 'array',
             'item': {'type': 'integer'},
@@ -80,7 +80,7 @@ put_public_place_schema = {
         }
     },
     'required': ['image_link', 'description', 'city_id', 'name', 'address', 'latitude',
-                 'longtude', 'categories', 'timetable']
+                 'longitude', 'categories', 'timetable']
 }
 
 
@@ -97,7 +97,7 @@ def put_new_public_place():
     session = get_session()
     geolocation = Geolocation(
         latitude=content['latitude'],
-        longtude=content['longtude']
+        longitude=content['longitude']
     )
 
     categories = []
@@ -166,7 +166,7 @@ def post_public_place_by_id(object_id):
     public_place.address = content['address']
     geolocation = session.query(Geolocation).get(public_place.geolocation_id)
     geolocation.latitude = content['latitude']
-    geolocation.longtude = content['longtude']
+    geolocation.longitude = content['longitude']
 
     categories = []
 

@@ -6,6 +6,8 @@ from models.Geolocation import Geolocation
 from models.Category import Category
 from models.base import get_session
 from flask_expects_json import expects_json
+import util.osrm_client
+import osrm
 
 
 place_blueptint = Blueprint('places', __name__)
@@ -52,7 +54,7 @@ put_place_schema = {
         'name': {'type': 'string'},
         'address': {'type': 'string'},
         'latitude': {'type': 'number', "minimum": -90, "maximum": 90},
-        'longtude': {'type': 'number', "minimum": -180, "maximum": 180},
+        'longitude': {'type': 'number', "minimum": -180, "maximum": 180},
         'categories': {
             'type': 'array',
             'item': {'type': 'integer'},
@@ -60,7 +62,7 @@ put_place_schema = {
         }
     },
     'required': ['image_link', 'description', 'city_id', 'name', 'address', 'latitude',
-                 'longtude', 'categories']
+                 'longitude', 'categories']
 }
 
 
@@ -77,7 +79,7 @@ def put_new_place():
     session = get_session()
     geolocation = Geolocation(
         latitude=content['latitude'],
-        longtude=content['longtude']
+        longitude=content['longitude']
     )
 
     categories = []
@@ -136,7 +138,7 @@ def post_place_by_id(object_id):
     place.address = content['address']
     geolocation = session.query(Geolocation).get(place.geolocation_id)
     geolocation.latitude = content['latitude']
-    geolocation.longtude = content['longtude']
+    geolocation.longitude = content['longitude']
 
     categories = []
 
@@ -175,3 +177,46 @@ def delete_place_by_id(object_id):
     session.close()
 
     return 'ok'
+
+
+geolocation_schema = {
+    'type': 'object',
+    'properties': {
+        'latitude': {'type': 'number', "minimum": -90, "maximum": 90},
+        'longitude': {'type': 'number', "minimum": -180, "maximum": 180},
+    },
+    'required': ['latitude', 'longitude']
+}
+
+
+@place_blueptint.route('/places/distance/<object_id>', methods=['POST'])
+@expects_json(geolocation_schema)
+@returns_json
+def get_distance_to_place(object_id):
+    if Place.query.get(object_id) is None:
+        abort(404, "Place with id = %s not found" % object_id)
+        return
+
+    content = g.data
+
+    session = get_session()
+    place = session.query(Place).get(object_id)
+
+    user_geo_point = [content['longitude'], content['latitude']]
+    place_geo_point = [place.geolocation.longitude, place.geolocation.latitude]
+
+    session.close()
+
+    geo_points = [user_geo_point, place_geo_point]
+
+    response = util.osrm_client.client.route(
+        coordinates=geo_points,
+        overview=osrm.overview.full)
+
+    if 'routes' in response:
+        return str(response['routes'][0]['distance'])
+    else:
+        return ''
+
+
+
