@@ -1,6 +1,4 @@
 from models.base import db
-from models.CategoryObject import CategoryObject
-from sqlalchemy.orm import relationship
 
 
 class Category(db.Model):
@@ -16,11 +14,6 @@ class Category(db.Model):
         name="category_name",
         nullable=False
     )
-    # objects = relationship(
-    #     "Object",
-    #     secondary=CategoryObject,
-    #     backref=db.backref('category')
-    # )
 
     def to_json(self):
         return {

@@ -216,7 +216,7 @@ def get_distance_to_place(object_id):
     if 'routes' in response:
         return str(response['routes'][0]['distance'])
     else:
-        return ''
+        abort(500, "Internal Error: Can't get valid response from OSRM service.")
 
 
 
