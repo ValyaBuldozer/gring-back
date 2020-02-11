@@ -19,7 +19,7 @@ def get_routes():
     object_id = request.args.get('object')
 
     routes = session.query(Route).filter(
-        Route.objects.any(RoutePlaceInfo.place_id == object_id) if object_id is not None else True
+        Route.places.any(RoutePlaceInfo.place_id == object_id) if object_id is not None else True
     ).all()
 
     json_routes = to_json(routes, lambda r: r.to_view_json())

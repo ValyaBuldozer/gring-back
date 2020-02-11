@@ -40,7 +40,7 @@ class RoutePlaceInfo(db.Model):
     )
 
     def to_json(self):
-        object_dict = self.object.to_base_json()
+        object_dict = self.place.to_base_json()
 
         return {
             **object_dict,
