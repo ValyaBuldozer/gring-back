@@ -108,13 +108,14 @@ def put_new_route():
 @expects_json(put_route_schema)
 @returns_json
 def post_route_by_id(route_id):
-    if Route.query.get(route_id) is None:
+    session = get_session()
+    route = session.query(Route).get(route_id)
+
+    if route is None:
         abort(404, "Route with id = %s not found" % route_id)
         return
 
     content = g.data
-    session = get_session()
-    route = session.query(Route).get(route_id)
 
     places = []
 

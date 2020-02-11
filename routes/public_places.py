@@ -88,13 +88,13 @@ put_public_place_schema = {
 @expects_json(put_public_place_schema)
 @returns_json
 def put_new_public_place():
+    session = get_session()
     content = g.data
 
-    if City.query.get(content['city_id']) is None:
+    if session.query(City).get(content['city_id']) is None:
         abort(400, "City with id = %s not found" % content['city_id'])
         return
 
-    session = get_session()
     geolocation = Geolocation(
         latitude=content['latitude'],
         longitude=content['longitude']
@@ -146,18 +146,19 @@ def put_new_public_place():
 @expects_json(put_public_place_schema)
 @returns_json
 def post_public_place_by_id(object_id):
-    if PublicPlace.query.get(object_id) is None:
+    session = get_session()
+    public_place = session.query(PublicPlace).get(object_id)
+
+    if public_place is None:
         abort(404, "Public place with id = %s not found" % object_id)
         return
 
     content = g.data
 
-    if City.query.get(content['city_id']) is None:
+    if session.query(City).get(content['city_id']) is None:
         abort(400, "City with id = %s not found" % content['city_id'])
         return
 
-    session = get_session()
-    public_place = session.query(PublicPlace).get(object_id)
     public_place.image_link = content['image_link']
     public_place.audioguide_link = content['audioguide_link']
     public_place.description = content['description']

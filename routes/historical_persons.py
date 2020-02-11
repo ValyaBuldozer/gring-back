@@ -80,12 +80,11 @@ put_historical_person_schema = {
 @returns_json
 def put_new_hisrorical_person():
     content = g.data
+    session = get_session()
 
-    if City.query.get(content['city_id']) is None:
+    if session.query(City).get(content['city_id']) is None:
         abort(400, "City with id = %s not found" % content['city_id'])
         return
-
-    session = get_session()
 
     categories = []
 
@@ -142,7 +141,8 @@ def post_hisrorical_person_by_id(object_id):
     session = get_session()
     content = g.data
 
-    if session.query(HistoricalPerson).get(object_id) is None:
+    historical_person = session.query(HistoricalPerson).get(object_id)
+    if historical_person is None:
         abort(404, "Historical person with id = %s not found" % object_id)
         return
 
@@ -150,7 +150,6 @@ def post_hisrorical_person_by_id(object_id):
         abort(400, "City with id = %s not found" % content['city_id'])
         return
 
-    historical_person = session.query(HistoricalPerson).get(object_id)
     historical_person.image_link = content['image_link']
     historical_person.audioguide_link = content['audioguide_link']
     historical_person.description = content['description']

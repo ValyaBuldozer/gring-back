@@ -70,13 +70,13 @@ put_place_schema = {
 @expects_json(put_place_schema)
 @returns_json
 def put_new_place():
+    session = get_session()
     content = g.data
 
-    if City.query.get(content['city_id']) is None:
+    if session.query(City).get(content['city_id']) is None:
         abort(400, "City with id = %s not found" % content['city_id'])
         return
 
-    session = get_session()
     geolocation = Geolocation(
         latitude=content['latitude'],
         longitude=content['longitude']
@@ -118,18 +118,19 @@ def put_new_place():
 @expects_json(put_place_schema)
 @returns_json
 def post_place_by_id(object_id):
-    if Place.query.get(object_id) is None:
+    session = get_session()
+    place = session.query(Place).get(object_id)
+
+    if place is None:
         abort(404, "Place with id = %s not found" % object_id)
         return
 
     content = g.data
 
-    if City.query.get(content['city_id']) is None:
+    if session.query(City).get(content['city_id']) is None:
         abort(400, "City with id = %s not found" % content['city_id'])
         return
 
-    session = get_session()
-    place = session.query(Place).get(object_id)
     place.image_link = content['image_link']
     place.audioguide_link = content['audioguide_link']
     place.description = content['description']
@@ -193,13 +194,15 @@ geolocation_schema = {
 @expects_json(geolocation_schema)
 @returns_json
 def get_distance_to_place(object_id):
-    if Place.query.get(object_id) is None:
+    session = get_session()
+    place = session.query(Place).get(object_id)
+
+    if place is None:
         abort(404, "Place with id = %s not found" % object_id)
         return
 
     content = g.data
 
-    session = get_session()
     place = session.query(Place).get(object_id)
 
     user_geo_point = [content['longitude'], content['latitude']]
