@@ -2,12 +2,11 @@ from models.base import db
 from sqlalchemy.orm import relationship
 from models.RoutePlaceInfo import RoutePlaceInfo
 from models.Entity import Entity
-from models.Place import Place
-from models.PublicPlace import PublicPlace
 from models.EntityType import EntityType
 from models.base import get_session
 import util.osrm_client
 import osrm
+from statistics import mean
 
 
 class Route(Entity):
@@ -56,12 +55,20 @@ class Route(Entity):
 
     def to_view_json(self):
         distance, duration = self.get_osrm_foot_info()
+        places_count = len(self.places)
+        image = None if places_count < 1 else self.places[0].place.image_link
+
         return {
             'id': self.id,
             'name': self.name,
-            'placesCount': len(self.places),
+            'placesCount': places_count,
             'distance': distance,
-            'duration': duration
+            'duration': duration,
+            'image': image,
+            'rating': {
+                'average': self.avg_rating(),
+                'count': len(self.reviews)
+            }
         }
 
     def get_osrm_foot_info(self):
