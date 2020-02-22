@@ -1,4 +1,7 @@
+from sqlalchemy import desc
 from models.base import db
+from models.UserFavoritePlace import UserFavoritePlace
+from sqlalchemy.orm import relationship
 
 
 class User(db.Model):
@@ -24,6 +27,19 @@ class User(db.Model):
         db.String(200),
         name="user_email",
         nullable=False
+    )
+    roles = relationship(
+        "Role",
+        secondary="user_role",
+        single_parent=True,
+        backref=db.backref('user')
+    )
+    favorite_places = relationship(
+        "Place",
+        secondary="user_favorite_place",
+        single_parent=True,
+        order_by=desc(UserFavoritePlace.c.add_time),
+        backref=db.backref('user')
     )
 
     def to_json(self):

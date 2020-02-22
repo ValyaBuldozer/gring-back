@@ -102,15 +102,15 @@ def put_new_hisrorical_person():
     related_objects = []
 
     for object_id in content['related_objects']:
-        object = session.query(Object).get(object_id)
+        obj = session.query(Object).get(object_id)
 
-        if object is None:
+        if obj is None:
             session.rollback()
             session.close()
             abort(400, "Related object with id = %s not found" % object_id)
             return
 
-        related_objects.append(object)
+        related_objects.append(obj)
 
     historical_person = HistoricalPerson(
         image_link=content['image_link'],
@@ -178,15 +178,15 @@ def post_hisrorical_person_by_id(object_id):
     related_objects = []
 
     for object_id in content['related_objects']:
-        object = session.query(Object).get(object_id)
+        obj = session.query(Object).get(object_id)
 
-        if object is None:
+        if obj is None:
             session.rollback()
             session.close()
             abort(400, "Related object with id = %s not found" % object_id)
             return
 
-        related_objects.append(object)
+        related_objects.append(obj)
 
     historical_person.related_objects = related_objects
 

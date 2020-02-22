@@ -72,7 +72,6 @@ put_route_schema = {
 @expects_json(put_route_schema)
 @returns_json
 def put_new_route():
-
     content = g.data
     session = get_session()
 

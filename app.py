@@ -29,6 +29,7 @@ from routes.places import place_blueptint
 from routes.public_places import public_place_blueptint
 from routes.historical_persons import historical_person_blueptint
 from routes.categories import category_blueprint
+from routes.user_page import user_page_blueprint
 from util.osrm_client import osrm_init
 
 
@@ -47,6 +48,7 @@ app.register_blueprint(place_blueptint, url_prefix=api_url_prefix)
 app.register_blueprint(public_place_blueptint, url_prefix=api_url_prefix)
 app.register_blueprint(historical_person_blueptint, url_prefix=api_url_prefix)
 app.register_blueprint(category_blueprint, url_prefix=api_url_prefix)
+app.register_blueprint(user_page_blueprint, url_prefix=api_url_prefix)
 
 db.init_app(app)
 jwt = JWTManager(app)
