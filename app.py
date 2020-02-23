@@ -31,6 +31,7 @@ from routes.historical_persons import historical_person_blueptint
 from routes.categories import category_blueprint
 from routes.user_page import user_page_blueprint
 from util.osrm_client import osrm_init
+from util.bcrypt_init import bcrypt_init
 from flask_migrate import Migrate
 
 app = Flask(__name__, instance_relative_config=True)
@@ -56,6 +57,7 @@ jwt = JWTManager(app)
 with app.app_context():
     migrate = Migrate(app, db)
     osrm_init()
+    bcrypt_init(app)
 
 
 @app.route(api_url_prefix + '/<path:path>')

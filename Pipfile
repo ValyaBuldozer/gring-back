@@ -16,6 +16,8 @@ osrm-py = "*"
 flask-jwt-extended = "*"
 gunicorn = "*"
 Flask-Migrate = "*"
+flask-bcrypt = "*"
+
 
 [requires]
 python_version = "3.6"

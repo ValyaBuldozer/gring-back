@@ -1,3 +1,5 @@
+import datetime
+
 from flask import Blueprint, g, request, abort, jsonify
 from flask_jwt_extended import (
     set_access_cookies, create_access_token, get_jwt_identity,
@@ -10,6 +12,7 @@ from models.UserRole import UserRole
 from models.Role import Role
 from flask_expects_json import expects_json
 from models.base import get_session
+import util.bcrypt_init
 
 
 auth_blueprint = Blueprint('auth', __name__)
@@ -64,7 +67,7 @@ def register_new_user():
 
     session.add(User(
         name=content['name'],
-        password=content['password'],
+        password=util.bcrypt_init.bcrypt.generate_password_hash(content['password']),
         email=content['email'],
         roles=roles
     ))
@@ -114,7 +117,7 @@ def update_user():
     ).first()
 
     user.name = content['name']
-    user.password = content['password']
+    user.password = util.bcrypt_init.bcrypt.generate_password_hash(content['password'])
     user.email = content['email']
     user.roles = roles
 
@@ -137,12 +140,13 @@ def login():
         abort(401, 'User not found')
         return
 
-    if user.password != password:
+    if not util.bcrypt_init.bcrypt.check_password_hash(user.password, password):
         abort(401, 'Invalid password')
         return
 
-    access_token = create_access_token(identity=user.id)
-    refresh_token = create_refresh_token(identity=user.id)
+    expires = datetime.timedelta(days=5)
+    access_token = create_access_token(identity=user.id, expires_delta=expires)
+    refresh_token = create_refresh_token(identity=user.id, expires_delta=expires)
     resp = jsonify({'login': True})
     set_access_cookies(resp, access_token)
     set_refresh_cookies(resp, refresh_token)
