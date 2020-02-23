@@ -29,9 +29,9 @@ def add_new_favorite_place():
     session = get_session()
 
     place_id = content['place_id']
-    place = session.query(Place).get(place_id)
+    favorite_place = session.query(Place).get(place_id)
 
-    if place is None:
+    if favorite_place is None:
         session.close()
         abort(400, "Place with id = %s not found" % place_id)
         return
@@ -42,9 +42,11 @@ def add_new_favorite_place():
         User.id == current_user_id
     ).first()
 
-    place = session.query(Place).get(place_id)
+    if any(place.id == favorite_place.id for place in user.favorite_places):
+        abort(400, "Place with id = %s already added to favorites" % favorite_place.id)
+        return
 
-    user.favorite_places.append(place)
+    user.favorite_places.append(favorite_place)
 
     session.commit()
     session.close()
@@ -56,9 +58,9 @@ def add_new_favorite_place():
 @jwt_required
 def delete_favorite_place(place_id):
     session = get_session()
-    place = session.query(Place).get(place_id)
+    favorite_place = session.query(Place).get(place_id)
 
-    if place is None:
+    if favorite_place is None:
         session.close()
         abort(404, "Place with id = %s not found" % place_id)
         return
@@ -69,7 +71,7 @@ def delete_favorite_place(place_id):
         User.id == current_user_id
     ).first()
 
-    user.favorite_places.remove(place)
+    user.favorite_places.remove(favorite_place)
 
     session.commit()
     session.close()

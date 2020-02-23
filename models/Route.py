@@ -29,12 +29,12 @@ class Route(Entity):
         name="route_description",
         nullable=False
     )
-    places = relationship(
-        "RoutePlaceInfo",
-        order_by=RoutePlaceInfo.__table__.c.route_place_order,
-        cascade="all, delete-orphan",
-        single_parent=True
-    )
+    # places = relationship(
+    #     "RoutePlaceInfo",
+    #     order_by=RoutePlaceInfo.__table__.c.route_place_order,
+    #     cascade="all, delete-orphan",
+    #     single_parent=True
+    # )
     places_info = relationship(
         "Place",
         secondary="route_place_info",
@@ -50,13 +50,13 @@ class Route(Entity):
         return {
             **self.to_view_json(),
             'description': self.description,
-            'places': self.places,
+            'places': self.places_info,
         }
 
     def to_view_json(self):
         distance, duration = self.get_osrm_foot_info()
-        places_count = len(self.places)
-        image = None if places_count < 1 else self.places[0].place.image_link
+        places_count = len(self.places_info)
+        image = None if places_count < 1 else self.places_info[0].image_link
 
         return {
             'id': self.id,
