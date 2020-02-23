@@ -31,7 +31,7 @@ from routes.historical_persons import historical_person_blueptint
 from routes.categories import category_blueprint
 from routes.user_page import user_page_blueprint
 from util.osrm_client import osrm_init
-
+from flask_migrate import Migrate
 
 app = Flask(__name__, instance_relative_config=True)
 
@@ -54,7 +54,7 @@ db.init_app(app)
 jwt = JWTManager(app)
 
 with app.app_context():
-    db.create_all()
+    migrate = Migrate(app, db)
     osrm_init()
 
 
@@ -93,3 +93,4 @@ def invalid_request(e):
 if __name__ == '__main__':
     logging.basicConfig(filename='gring.log', level=logging.DEBUG)
     app.run(host="0.0.0.0", port="5000")
+    manager.run()

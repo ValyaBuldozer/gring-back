@@ -37,6 +37,18 @@ def register_new_user():
     content = g.data
     session = get_session()
 
+    users = session.query(User)
+
+    username = content['name']
+    if any(user.name == username for user in users):
+        abort(400, "User with name = %s already exist" % username)
+        return
+
+    usermail = content['email']
+    if any(user.email == usermail for user in users):
+        abort(400, "User with email = %s already exist" % usermail)
+        return
+
     roles = []
 
     for role_id in content['roles']:
