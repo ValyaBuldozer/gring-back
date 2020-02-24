@@ -12,11 +12,13 @@ from flask_expects_json import expects_json
 user_page_blueprint = Blueprint('user', __name__)
 
 
-@user_page_blueprint.route('/user/favorite/<user_id>', methods=['GET'])
-def get_user_favorite_place_by_id(user_id):
+@user_page_blueprint.route('/user/favorite', methods=['GET'])
+@jwt_required
+def get_user_favorite_place_by_id():
     session = get_session()
 
-    user = session.query(User).get(user_id)
+    current_user_id = get_jwt_identity()
+    user = session.query(User).get(current_user_id)
 
     json_place = to_json(user.favorite_places)
 
