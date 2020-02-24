@@ -29,7 +29,7 @@ from routes.places import place_blueptint
 from routes.public_places import public_place_blueptint
 from routes.historical_persons import historical_person_blueptint
 from routes.categories import category_blueprint
-from routes.user_page import user_page_blueprint
+from routes.user import user_page_blueprint
 from util.osrm_client import osrm_init
 from flask_migrate import Migrate
 
@@ -93,4 +93,3 @@ def invalid_request(e):
 if __name__ == '__main__':
     logging.basicConfig(filename='gring.log', level=logging.DEBUG)
     app.run(host="0.0.0.0", port="5000")
-    manager.run()

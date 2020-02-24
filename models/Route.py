@@ -29,19 +29,12 @@ class Route(Entity):
         name="route_description",
         nullable=False
     )
-    # places = relationship(
-    #     "RoutePlaceInfo",
-    #     order_by=RoutePlaceInfo.__table__.c.route_place_order,
-    #     cascade="all, delete-orphan",
-    #     single_parent=True
-    # )
-    places_info = relationship(
-        "Place",
-        secondary="route_place_info",
-        single_parent=True,
-        backref=db.backref('route')
+    places = relationship(
+        "RoutePlaceInfo",
+        order_by=RoutePlaceInfo.__table__.c.route_place_order,
+        cascade="all, delete-orphan",
+        single_parent=True
     )
-
     __mapper_args__ = {
         'polymorphic_identity': EntityType.route
     }
@@ -50,13 +43,13 @@ class Route(Entity):
         return {
             **self.to_view_json(),
             'description': self.description,
-            'places': self.places_info,
+            'places': self.places,
         }
 
     def to_view_json(self):
         distance, duration = self.get_osrm_foot_info()
-        places_count = len(self.places_info)
-        image = None if places_count < 1 else self.places_info[0].image_link
+        places_count = len(self.places)
+        image = None if places_count < 1 else self.places[0].place.image_link
 
         return {
             'id': self.id,
@@ -76,8 +69,8 @@ class Route(Entity):
 
         geo_points = []
 
-        for place in self.places_info:
-            geolocation = place.geolocation
+        for place_info in self.places:
+            geolocation = place_info.place.geolocation
 
             geo_point = [geolocation.longitude, geolocation.latitude]
             geo_points.append(geo_point)

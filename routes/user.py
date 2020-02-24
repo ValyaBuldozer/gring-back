@@ -1,15 +1,28 @@
 from flask import Blueprint, g, request, abort, jsonify
+from util.json import to_json
 from flask_jwt_extended import (
     get_jwt_identity, jwt_required
 )
 from models.base import get_session
 from models.User import User
 from models.Place import Place
-from models.UserFavoritePlace import UserFavoritePlace
 from flask_expects_json import expects_json
 
 
-user_page_blueprint = Blueprint('user_page', __name__)
+user_page_blueprint = Blueprint('user', __name__)
+
+
+@user_page_blueprint.route('/user/favorite/<user_id>', methods=['GET'])
+def get_user_favorite_place_by_id(user_id):
+    session = get_session()
+
+    user = session.query(User).get(user_id)
+
+    json_place = to_json(user.favorite_places)
+
+    session.close()
+
+    return json_place
 
 
 put_favorite_schema = {
@@ -21,7 +34,7 @@ put_favorite_schema = {
 }
 
 
-@user_page_blueprint.route('/user_page/favorite_place/', methods=['POST'])
+@user_page_blueprint.route('/user/favorite/', methods=['POST'])
 @expects_json(put_favorite_schema)
 @jwt_required
 def add_new_favorite_place():
@@ -54,7 +67,7 @@ def add_new_favorite_place():
     return 'ok'
 
 
-@user_page_blueprint.route('/user_page/favorite_place/<place_id>', methods=['DELETE'])
+@user_page_blueprint.route('/user/favorite/<place_id>', methods=['DELETE'])
 @jwt_required
 def delete_favorite_place(place_id):
     session = get_session()
