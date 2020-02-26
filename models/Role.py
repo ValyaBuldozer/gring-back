@@ -1,4 +1,5 @@
 from models.base import db
+from models.RoleName import RoleName
 
 
 class Role(db.Model):
@@ -11,7 +12,7 @@ class Role(db.Model):
         nullable=False
     )
     name = db.Column(
-        db.String(20),
+        db.Enum(RoleName),
         name="role_name",
         nullable=False
     )

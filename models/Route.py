@@ -3,7 +3,6 @@ from sqlalchemy.orm import relationship
 from models.RoutePlaceInfo import RoutePlaceInfo
 from models.Entity import Entity
 from models.EntityType import EntityType
-from models.base import get_session
 import util.osrm_client
 import osrm
 from statistics import mean
@@ -65,8 +64,6 @@ class Route(Entity):
         }
 
     def get_osrm_foot_info(self):
-        session = get_session()
-
         geo_points = []
 
         for place_info in self.places:
@@ -74,8 +71,6 @@ class Route(Entity):
 
             geo_point = [geolocation.longitude, geolocation.latitude]
             geo_points.append(geo_point)
-
-        session.close()
 
         response = util.osrm_client.client.route(
             coordinates=geo_points,

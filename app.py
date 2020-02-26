@@ -21,6 +21,7 @@ from models.User import User
 from models.Review import Review
 from models.Role import Role
 from models.UserRole import UserRole
+from models.UserFavoritePlace import UserFavoritePlace
 from routes.auth import auth_blueprint
 from routes.objects import object_blueprint
 from routes.routes import routes_blueprint
@@ -32,6 +33,7 @@ from routes.categories import category_blueprint
 from routes.user import user_page_blueprint
 from util.osrm_client import osrm_init
 from flask_migrate import Migrate
+from util.bcrypt_init import bcrypt_init
 
 app = Flask(__name__, instance_relative_config=True)
 
@@ -55,6 +57,7 @@ jwt = JWTManager(app)
 
 with app.app_context():
     migrate = Migrate(app, db)
+    bcrypt_init(app)
     osrm_init()
 
 

@@ -1,7 +1,10 @@
 from sqlalchemy import desc
+
+from models.Role import Role
 from models.base import db
 from models.UserFavoritePlace import UserFavoritePlace
 from sqlalchemy.orm import relationship
+from models.base import get_session
 
 
 class User(db.Model):
@@ -41,6 +44,16 @@ class User(db.Model):
         order_by=desc(UserFavoritePlace.c.add_time),
         backref=db.backref('user')
     )
+
+    def can(self, allowed_roles):
+        role_ids = []
+        for role in self.roles:
+            role_ids.append(role.id)
+        for allowed_role in allowed_roles:
+            if allowed_role.value not in role_ids:
+                return False
+
+        return True
 
     def to_json(self):
         return {

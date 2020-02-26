@@ -18,4 +18,3 @@ def returns_json(f):
         r = f(*args, **kwargs)
         return Response(r, content_type='application/json')
     return decorated_function
-    
