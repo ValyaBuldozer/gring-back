@@ -46,11 +46,11 @@ class User(db.Model):
     )
 
     def can(self, allowed_roles):
-        role_ids = []
+        user_role_ids = []
         for role in self.roles:
-            role_ids.append(role.id)
+            user_role_ids.append(role.id)
         for allowed_role in allowed_roles:
-            if allowed_role.value not in role_ids:
+            if allowed_role.value not in user_role_ids:
                 return False
 
         return True

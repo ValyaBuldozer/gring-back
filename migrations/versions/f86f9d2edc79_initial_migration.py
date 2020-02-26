@@ -1,16 +1,14 @@
 """Initial migration.
-
-Revision ID: 6d4dba1c4a30
-Revises: 
-Create Date: 2020-02-26 20:17:37.961724
-
+Revision ID: f86f9d2edc79
+Revises:
+Create Date: 2020-02-23 15:30:14.144189
 """
 from alembic import op
 import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '6d4dba1c4a30'
+revision = 'f86f9d2edc79'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -43,7 +41,7 @@ def upgrade():
     )
     op.create_table('role',
     sa.Column('role_id', sa.Integer(), nullable=False),
-    sa.Column('role_name', sa.Enum('admin', 'moder', 'user', name='rolename'), nullable=False),
+    sa.Column('role_name', sa.String(length=20), nullable=False),
     sa.PrimaryKeyConstraint('role_id')
     )
     op.create_table('user',
@@ -84,15 +82,13 @@ def upgrade():
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('role_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['role_id'], ['role.role_id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['user.user_id'], ),
-    sa.PrimaryKeyConstraint('user_id', 'role_id')
+    sa.ForeignKeyConstraint(['user_id'], ['user.user_id'], )
     )
     op.create_table('category_object',
     sa.Column('object_id', sa.Integer(), nullable=False),
     sa.Column('category_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['category_id'], ['category.category_id'], ondelete='cascade'),
-    sa.ForeignKeyConstraint(['object_id'], ['object.object_id'], ondelete='cascade'),
-    sa.PrimaryKeyConstraint('object_id', 'category_id')
+    sa.ForeignKeyConstraint(['object_id'], ['object.object_id'], ondelete='cascade')
     )
     op.create_table('historical_person',
     sa.Column('object_id', sa.Integer(), nullable=False),

@@ -14,7 +14,8 @@ from models.base import get_session
 from models.RoleName import RoleName
 from util.decorators import roles_required
 from util.current_user import get_current_user
-import util.bcrypt_init
+from util import bcrypt_init
+from flask import current_app
 
 
 auth_blueprint = Blueprint('auth', __name__)
@@ -68,7 +69,7 @@ def basic_register_new_user():
 
     session.add(User(
         name=content['name'],
-        password=util.bcrypt_init.bcrypt.generate_password_hash(content['password']),
+        password=bcrypt_init.bcrypt.generate_password_hash(content['password']),
         email=content['email'],
         roles=roles
     ))
@@ -101,7 +102,7 @@ def basic_update_user():
     user = get_current_user
 
     user.name = content['name']
-    user.password = util.bcrypt_init.bcrypt.generate_password_hash(content['password'])
+    user.password = bcrypt_init.bcrypt.generate_password_hash(content['password'])
     user.email = content['email']
 
     session.commit()
@@ -144,7 +145,7 @@ def admin_register_new_user():
 
     session.add(User(
         name=content['name'],
-        password=util.bcrypt_init.bcrypt.generate_password_hash(content['password']),
+        password=bcrypt_init.bcrypt.generate_password_hash(content['password']),
         email=content['email'],
         roles=roles
     ))
@@ -192,7 +193,7 @@ def admin_update_user(user_id):
         roles.append(role)
 
     user.name = content['name']
-    user.password = util.bcrypt_init.bcrypt.generate_password_hash(content['password'])
+    user.password = bcrypt_init.bcrypt.generate_password_hash(content['password'])
     user.email = content['email']
     user.roles = roles
 
@@ -215,13 +216,13 @@ def login():
         abort(401, 'User not found')
         return
 
-    if not util.bcrypt_init.bcrypt.check_password_hash(user.password, password):
+    if not bcrypt_init.bcrypt.check_password_hash(user.password, password):
         abort(401, 'Invalid password')
         return
 
-    at_expires = datetime.timedelta(days=2)
+    at_expires = datetime.timedelta(days=current_app.config['ACCESS_TOKEN_EXPIRES_DAYS'])
     access_token = create_access_token(identity=user.id, expires_delta=at_expires)
-    rt_expires = datetime.timedelta(days=10)
+    rt_expires = datetime.timedelta(days=current_app.config['REFRESH_TOKEN_EXPIRES_DAYS'])
     refresh_token = create_refresh_token(identity=user.id, expires_delta=rt_expires)
     resp = jsonify({'login': True})
     set_access_cookies(resp, access_token)

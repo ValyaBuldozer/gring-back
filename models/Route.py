@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from models.RoutePlaceInfo import RoutePlaceInfo
 from models.Entity import Entity
 from models.EntityType import EntityType
-import util.osrm_client
+from util import osrm_client
 import osrm
 from statistics import mean
 
@@ -72,7 +72,7 @@ class Route(Entity):
             geo_point = [geolocation.longitude, geolocation.latitude]
             geo_points.append(geo_point)
 
-        response = util.osrm_client.client.route(
+        response = osrm_client.client.route(
             coordinates=geo_points,
             overview=osrm.overview.full)
 
