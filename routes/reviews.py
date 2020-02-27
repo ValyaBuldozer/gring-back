@@ -59,11 +59,14 @@ def put_new_review(entity_id):
 
     user = get_current_user()
 
-    review = session.query(Review).get(user.id, entity_id)
+    review = session.query(Review).filter(
+        Review.user_id == user.id,
+        Review.entity_id == entity_id
+    ).first()
 
     if review is not None:
         session.close()
-        abort(400, "This user already has a review for entity with id = %s" % entity_id)
+        abort(400, "User with id = %s already has a review for entity with id = %s" % (user.id, entity_id))
         return
 
     user_id = get_jwt_identity()
@@ -98,7 +101,7 @@ def delete_own_review_by_id(entity_id):
 
     if review is None:
         session.close()
-        abort(404, "This user review to entity with id = %s not found" % entity_id)
+        abort(404, "User with id = %s didn't add review to entity with id = %s yet" % (user.id, entity_id))
         return
 
     session.delete(review)
@@ -135,7 +138,7 @@ def delete_user_review():
 
     if review is None:
         session.close()
-        abort(404, "This user with id = %s review to entity with id = %s not found" % (user_id, entity_id))
+        abort(404, "User with id = %s didn't add review to entity with id = %s yet" % (user_id, entity_id))
         return
 
     session.delete(review)
