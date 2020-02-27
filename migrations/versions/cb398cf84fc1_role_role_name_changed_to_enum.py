@@ -1,8 +1,8 @@
-"""empty message
+"""role.role_name changed to enum.
 
-Revision ID: 131cb6765c7a
+Revision ID: cb398cf84fc1
 Revises: f86f9d2edc79
-Create Date: 2020-02-26 21:51:36.844766
+Create Date: 2020-02-27 15:15:54.080211
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = '131cb6765c7a'
+revision = 'cb398cf84fc1'
 down_revision = 'f86f9d2edc79'
 branch_labels = None
 depends_on = None
