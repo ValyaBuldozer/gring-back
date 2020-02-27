@@ -6,6 +6,8 @@ from models.Object import Object
 from models.Place import Place
 from models.base import get_session
 from flask_expects_json import expects_json
+from util.decorators import roles_required
+from models.RoleName import RoleName
 
 
 routes_blueprint = Blueprint('routes', __name__)
@@ -37,6 +39,7 @@ def get_route_by_id(route_id):
     route = session.query(Route).get(route_id)
 
     if route is None:
+        session.close()
         abort(404, "Route with id = %s not found" % route_id)
 
     json_route = to_json(route)
@@ -68,9 +71,10 @@ put_route_schema = {
 }
 
 
-@routes_blueprint.route('/routes/', methods=['PUT'])
+@routes_blueprint.route('/routes', methods=['PUT'])
 @expects_json(put_route_schema)
 @returns_json
+@roles_required([RoleName.admin, RoleName.content_moder])
 def put_new_route():
     content = g.data
     session = get_session()
@@ -79,7 +83,6 @@ def put_new_route():
 
     for index, place_info in enumerate(content['places']):
         if session.query(Place).get(place_info['id']) is None:
-            session.rollback()
             session.close()
             abort(400, "Place with id = %s not found" % (place_info['id']))
             return
@@ -106,11 +109,13 @@ def put_new_route():
 @routes_blueprint.route('/routes/<route_id>', methods=['POST'])
 @expects_json(put_route_schema)
 @returns_json
+@roles_required([RoleName.admin, RoleName.content_moder])
 def post_route_by_id(route_id):
     session = get_session()
     route = session.query(Route).get(route_id)
 
     if route is None:
+        session.close()
         abort(404, "Route with id = %s not found" % route_id)
         return
 
@@ -120,7 +125,6 @@ def post_route_by_id(route_id):
 
     for index, place_info in enumerate(content['places']):
         if session.query(Place).get(place_info['id']) is None:
-            session.rollback()
             session.close()
             abort(400, "Place with id = %s not found" % (place_info['id']))
             return
@@ -144,6 +148,7 @@ def post_route_by_id(route_id):
 
 @routes_blueprint.route('/routes/<route_id>', methods=['DELETE'])
 @returns_json
+@roles_required([RoleName.admin, RoleName.content_moder])
 def delete_route_by_id(route_id):
     session = get_session()
     route = session.query(Route).get(route_id)

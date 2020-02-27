@@ -1,5 +1,6 @@
 from sqlalchemy import desc
 
+from models.RoleName import RoleName
 from models.Role import Role
 from models.base import db
 from models.UserFavoritePlace import UserFavoritePlace
@@ -31,6 +32,13 @@ class User(db.Model):
         name="user_email",
         nullable=False
     )
+    is_active = db.Column(
+        db.Boolean,
+        name="is_active",
+        default=True,
+        server_default='1',
+        nullable=False
+    )
     roles = relationship(
         "Role",
         secondary="user_role",
@@ -50,10 +58,18 @@ class User(db.Model):
         for role in self.roles:
             user_role_ids.append(role.id)
         for allowed_role in allowed_roles:
-            if allowed_role.value not in user_role_ids:
-                return False
+            if allowed_role.value in user_role_ids:
+                return True
 
-        return True
+        return False
+
+    def is_admin(self):
+        admin_roles = [RoleName.admin.value, RoleName.content_moder.value, RoleName.user_moder.value]
+        for role in self.roles:
+            if role.id in admin_roles:
+                return True
+
+        return False
 
     def to_json(self):
         return {

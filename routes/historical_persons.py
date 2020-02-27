@@ -6,6 +6,8 @@ from models.Object import Object
 from models.Category import Category
 from models.base import get_session
 from flask_expects_json import expects_json
+from util.decorators import roles_required
+from models.RoleName import RoleName
 
 
 historical_person_blueptint = Blueprint('historical_persons', __name__)
@@ -33,6 +35,7 @@ def get_historical_person_by_id(object_id):
     historical_person = session.query(HistoricalPerson).get(object_id)
 
     if historical_person is None:
+        session.close()
         abort(404, "Historical person with id = %s not found" % object_id)
 
     json_historical_person = to_json(historical_person)
@@ -75,14 +78,16 @@ put_historical_person_schema = {
 }
 
 
-@historical_person_blueptint.route('/historical_persons/', methods=['PUT'])
+@historical_person_blueptint.route('/historical_persons', methods=['PUT'])
 @expects_json(put_historical_person_schema)
 @returns_json
+@roles_required([RoleName.admin, RoleName.content_moder])
 def put_new_hisrorical_person():
     content = g.data
     session = get_session()
 
     if session.query(City).get(content['city_id']) is None:
+        session.close()
         abort(400, "City with id = %s not found" % content['city_id'])
         return
 
@@ -92,7 +97,6 @@ def put_new_hisrorical_person():
         category = session.query(Category).get(category_id)
 
         if category is None:
-            session.rollback()
             session.close()
             abort(400, "Category with id = %s not found" % category_id)
             return
@@ -105,7 +109,6 @@ def put_new_hisrorical_person():
         obj = session.query(Object).get(object_id)
 
         if obj is None:
-            session.rollback()
             session.close()
             abort(400, "Related object with id = %s not found" % object_id)
             return
@@ -137,16 +140,19 @@ def put_new_hisrorical_person():
 @historical_person_blueptint.route('/historical_persons/<object_id>', methods=['POST'])
 @expects_json(put_historical_person_schema)
 @returns_json
+@roles_required([RoleName.admin, RoleName.content_moder])
 def post_hisrorical_person_by_id(object_id):
     session = get_session()
     content = g.data
 
     historical_person = session.query(HistoricalPerson).get(object_id)
     if historical_person is None:
+        session.close()
         abort(404, "Historical person with id = %s not found" % object_id)
         return
 
     if session.query(City).get(content['city_id']) is None:
+        session.close()
         abort(400, "City with id = %s not found" % content['city_id'])
         return
 
@@ -166,7 +172,6 @@ def post_hisrorical_person_by_id(object_id):
         category = session.query(Category).get(category_id)
 
         if category is None:
-            session.rollback()
             session.close()
             abort(400, "Category with id = %s not found" % category_id)
             return
@@ -181,7 +186,6 @@ def post_hisrorical_person_by_id(object_id):
         obj = session.query(Object).get(object_id)
 
         if obj is None:
-            session.rollback()
             session.close()
             abort(400, "Related object with id = %s not found" % object_id)
             return
@@ -198,6 +202,7 @@ def post_hisrorical_person_by_id(object_id):
 
 @historical_person_blueptint.route('/historical_persons/<object_id>', methods=['DELETE'])
 @returns_json
+@roles_required([RoleName.admin, RoleName.content_moder])
 def delete_hisrorical_person_by_id(object_id):
     session = get_session()
     historical_person = session.query(HistoricalPerson).get(object_id)

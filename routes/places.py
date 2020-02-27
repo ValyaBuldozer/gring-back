@@ -6,8 +6,10 @@ from models.Geolocation import Geolocation
 from models.Category import Category
 from models.base import get_session
 from flask_expects_json import expects_json
-import util.osrm_client
+from util import osrm_client
 import osrm
+from util.decorators import roles_required
+from models.RoleName import RoleName
 
 
 place_blueptint = Blueprint('places', __name__)
@@ -35,6 +37,7 @@ def get_place_by_id(object_id):
     place = session.query(Place).get(object_id)
 
     if place is None:
+        session.close()
         abort(404, "Place with id = %s not found" % object_id)
 
     json_place = to_json(place)
@@ -66,14 +69,16 @@ put_place_schema = {
 }
 
 
-@place_blueptint.route('/places/', methods=['PUT'])
+@place_blueptint.route('/places', methods=['PUT'])
 @expects_json(put_place_schema)
 @returns_json
+@roles_required([RoleName.admin, RoleName.content_moder])
 def put_new_place():
     session = get_session()
     content = g.data
 
     if session.query(City).get(content['city_id']) is None:
+        session.close()
         abort(400, "City with id = %s not found" % content['city_id'])
         return
 
@@ -88,7 +93,6 @@ def put_new_place():
         category = session.query(Category).get(category_id)
 
         if category is None:
-            session.rollback()
             session.close()
             abort(400, "Category with id = %s not found" % category_id)
             return
@@ -117,17 +121,20 @@ def put_new_place():
 @place_blueptint.route('/places/<object_id>', methods=['POST'])
 @expects_json(put_place_schema)
 @returns_json
+@roles_required([RoleName.admin, RoleName.content_moder])
 def post_place_by_id(object_id):
     session = get_session()
     place = session.query(Place).get(object_id)
 
     if place is None:
+        session.close()
         abort(404, "Place with id = %s not found" % object_id)
         return
 
     content = g.data
 
     if session.query(City).get(content['city_id']) is None:
+        session.close()
         abort(400, "City with id = %s not found" % content['city_id'])
         return
 
@@ -147,7 +154,6 @@ def post_place_by_id(object_id):
         category = session.query(Category).get(category_id)
 
         if category is None:
-            session.rollback()
             session.close()
             abort(400, "Category with id = %s not found" % category_id)
             return
@@ -164,6 +170,7 @@ def post_place_by_id(object_id):
 
 @place_blueptint.route('/places/<object_id>', methods=['DELETE'])
 @returns_json
+@roles_required([RoleName.admin, RoleName.content_moder])
 def delete_place_by_id(object_id):
     session = get_session()
     place = session.query(Place).get(object_id)
@@ -198,6 +205,7 @@ def get_distance_to_place(object_id):
     place = session.query(Place).get(object_id)
 
     if place is None:
+        session.close()
         abort(404, "Place with id = %s not found" % object_id)
         return
 
@@ -212,7 +220,7 @@ def get_distance_to_place(object_id):
 
     geo_points = [user_geo_point, place_geo_point]
 
-    response = util.osrm_client.client.route(
+    response = osrm_client.client.route(
         coordinates=geo_points,
         overview=osrm.overview.full)
 

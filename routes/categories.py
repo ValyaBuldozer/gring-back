@@ -36,6 +36,7 @@ def get_category_by_id(category_id):
     cat = session.query(Category).get(category_id)
 
     if cat is None:
+        session.close()
         abort(404, "Category with id = %s not found" % category_id)
 
     json_category = to_json(cat)

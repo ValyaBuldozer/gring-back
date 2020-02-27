@@ -7,13 +7,16 @@ from models.base import get_session
 from models.User import User
 from models.Place import Place
 from flask_expects_json import expects_json
+from util.current_user import get_current_user
+from util.decorators import roles_required
+from models.RoleName import RoleName
 
 
 user_page_blueprint = Blueprint('user', __name__)
 
 
 @user_page_blueprint.route('/user/favorite', methods=['GET'])
-@jwt_required
+@roles_required([RoleName.admin, RoleName.content_moder, RoleName.user_moder, RoleName.user])
 def get_user_favorite_place_by_id():
     session = get_session()
 
@@ -27,6 +30,53 @@ def get_user_favorite_place_by_id():
     return json_place
 
 
+@user_page_blueprint.route('/user/block/<user_id>', methods=['POST'])
+@roles_required([RoleName.admin, RoleName.user_moder])
+def block_user_by_id(user_id):
+    session = get_session()
+
+    user = session.query(User).get(user_id)
+    if user is None:
+        session.close()
+        abort(404, "User with id = %s not found" % user_id)
+        return
+
+    if user.is_admin():
+        session.close()
+        abort(400, "User with id = %s cannot be blocked" % user_id)
+        return
+
+    user.is_active = False
+
+    session.commit()
+    session.close()
+
+    return 'ok'
+
+
+@user_page_blueprint.route('/user/unblock/<user_id>', methods=['POST'])
+@roles_required([RoleName.admin, RoleName.user_moder])
+def unblock_user_by_id(user_id):
+    session = get_session()
+
+    user = session.query(User).get(user_id)
+    if user is None:
+        session.close()
+        abort(404, "User with id = %s not found" % user_id)
+
+    if user.is_active:
+        session.close()
+        abort(400, "User with id = %s is already active" % user_id)
+        return
+
+    user.is_active = True
+
+    session.commit()
+    session.close()
+
+    return 'ok'
+
+
 put_favorite_schema = {
     'type': 'object',
     'properties': {
@@ -36,9 +86,9 @@ put_favorite_schema = {
 }
 
 
-@user_page_blueprint.route('/user/favorite/', methods=['POST'])
+@user_page_blueprint.route('/user/favorite', methods=['POST'])
 @expects_json(put_favorite_schema)
-@jwt_required
+@roles_required([RoleName.admin, RoleName.content_moder, RoleName.user_moder, RoleName.user])
 def add_new_favorite_place():
     content = g.data
     session = get_session()
@@ -51,13 +101,10 @@ def add_new_favorite_place():
         abort(400, "Place with id = %s not found" % place_id)
         return
 
-    current_user_id = get_jwt_identity()
-
-    user = session.query(User).filter(
-        User.id == current_user_id
-    ).first()
+    user = get_current_user()
 
     if any(place.id == favorite_place.id for place in user.favorite_places):
+        session.close()
         abort(400, "Place with id = %s already added to favorites" % favorite_place.id)
         return
 
@@ -70,7 +117,7 @@ def add_new_favorite_place():
 
 
 @user_page_blueprint.route('/user/favorite/<place_id>', methods=['DELETE'])
-@jwt_required
+@roles_required([RoleName.admin, RoleName.content_moder, RoleName.user_moder, RoleName.user])
 def delete_favorite_place(place_id):
     session = get_session()
     favorite_place = session.query(Place).get(place_id)
@@ -80,11 +127,7 @@ def delete_favorite_place(place_id):
         abort(404, "Place with id = %s not found" % place_id)
         return
 
-    current_user_id = get_jwt_identity()
-
-    user = session.query(User).filter(
-        User.id == current_user_id
-    ).first()
+    user = get_current_user()
 
     user.favorite_places.remove(favorite_place)
 

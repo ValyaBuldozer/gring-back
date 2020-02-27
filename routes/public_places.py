@@ -8,6 +8,8 @@ from models.Timetable import Timetable
 from models.WeekDay import WeekDay
 from models.base import get_session
 from flask_expects_json import expects_json
+from util.decorators import roles_required
+from models.RoleName import RoleName
 
 
 public_place_blueptint = Blueprint('public_places', __name__)
@@ -35,6 +37,7 @@ def get_public_places_by_id(object_id):
     public_place = session.query(PublicPlace).get(object_id)
 
     if public_place is None:
+        session.close()
         abort(404, "Public place with id = %s not found" % object_id)
 
     json_public_place = to_json(public_place)
@@ -84,14 +87,16 @@ put_public_place_schema = {
 }
 
 
-@public_place_blueptint.route('/public_places/', methods=['PUT'])
+@public_place_blueptint.route('/public_places', methods=['PUT'])
 @expects_json(put_public_place_schema)
 @returns_json
+@roles_required([RoleName.admin, RoleName.content_moder])
 def put_new_public_place():
     session = get_session()
     content = g.data
 
     if session.query(City).get(content['city_id']) is None:
+        session.close()
         abort(400, "City with id = %s not found" % content['city_id'])
         return
 
@@ -106,7 +111,6 @@ def put_new_public_place():
         category = session.query(Category).get(category_id)
 
         if category is None:
-            session.rollback()
             session.close()
             abort(400, "Category with id = %s not found" % category_id)
             return
@@ -145,17 +149,20 @@ def put_new_public_place():
 @public_place_blueptint.route('/public_places/<object_id>', methods=['POST'])
 @expects_json(put_public_place_schema)
 @returns_json
+@roles_required([RoleName.admin, RoleName.content_moder])
 def post_public_place_by_id(object_id):
     session = get_session()
     public_place = session.query(PublicPlace).get(object_id)
 
     if public_place is None:
+        session.close()
         abort(404, "Public place with id = %s not found" % object_id)
         return
 
     content = g.data
 
     if session.query(City).get(content['city_id']) is None:
+        session.close()
         abort(400, "City with id = %s not found" % content['city_id'])
         return
 
@@ -175,7 +182,6 @@ def post_public_place_by_id(object_id):
         category = session.query(Category).get(category_id)
 
         if category is None:
-            session.rollback()
             session.close()
             abort(400, "Category with id = %s not found" % category_id)
             return
@@ -203,6 +209,7 @@ def post_public_place_by_id(object_id):
 
 @public_place_blueptint.route('/public_places/<object_id>', methods=['DELETE'])
 @returns_json
+@roles_required([RoleName.admin, RoleName.content_moder])
 def delete_public_place_by_id(object_id):
     session = get_session()
     public_place = session.query(PublicPlace).get(object_id)

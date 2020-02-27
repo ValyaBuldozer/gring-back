@@ -53,15 +53,17 @@ def basic_register_new_user():
     content = g.data
     session = get_session()
 
-    users = session.query(User)
+    users = session.query(User).all()
 
     username = content['name']
     if any(user.name == username for user in users):
+        session.close()
         abort(400, "User with name = %s already exist" % username)
         return
 
     usermail = content['email']
     if any(user.email == usermail for user in users):
+        session.close()
         abort(400, "User with email = %s already exist" % usermail)
         return
 
@@ -82,24 +84,26 @@ def basic_register_new_user():
 
 @auth_blueprint.route('/token/registration', methods=['POST'])
 @expects_json(put_user_schema)
-@jwt_required
+@roles_required([RoleName.admin, RoleName.content_moder, RoleName.user_moder, RoleName.user])
 def basic_update_user():
     content = g.data
     session = get_session()
 
-    users = session.query(User)
+    users = session.query(User).all()
 
     username = content['name']
     if any(user.name == username for user in users):
+        session.close()
         abort(400, "User with name = %s already exist" % username)
         return
 
     usermail = content['email']
     if any(user.email == usermail for user in users):
+        session.close()
         abort(400, "User with email = %s already exist" % usermail)
         return
 
-    user = get_current_user
+    user = get_current_user()
 
     user.name = content['name']
     user.password = bcrypt_init.bcrypt.generate_password_hash(content['password'])
@@ -113,20 +117,22 @@ def basic_update_user():
 
 @auth_blueprint.route('/token/admin/registration', methods=['PUT'])
 @expects_json(put_admin_schema)
-@roles_required([RoleName.admin])
+@roles_required([RoleName.admin, RoleName.user_moder])
 def admin_register_new_user():
     content = g.data
     session = get_session()
 
-    users = session.query(User)
+    users = session.query(User).all()
 
     username = content['name']
     if any(user.name == username for user in users):
+        session.close()
         abort(400, "User with name = %s already exist" % username)
         return
 
     usermail = content['email']
     if any(user.email == usermail for user in users):
+        session.close()
         abort(400, "User with email = %s already exist" % usermail)
         return
 
@@ -136,7 +142,6 @@ def admin_register_new_user():
         role = session.query(Role).get(RoleName(role_id).value)
 
         if role is None:
-            session.rollback()
             session.close()
             abort(400, "Role with id = %s not found" % role_id)
             return
@@ -158,24 +163,28 @@ def admin_register_new_user():
 
 @auth_blueprint.route('/token/admin/registration/<user_id>', methods=['POST'])
 @expects_json(put_admin_schema)
-@roles_required([RoleName.admin])
+@roles_required([RoleName.admin, RoleName.user_moder])
 def admin_update_user(user_id):
     content = g.data
     session = get_session()
 
-    users = session.query(User)
+    users = session.query(User).all()
 
     user = users.get(user_id)
     if user is None:
+        session.close()
         abort(404, "User with id = %s not found" % user_id)
+        return
 
     username = content['name']
     if any(user.name == username for user in users):
+        session.close()
         abort(400, "User with name = %s already exist" % username)
         return
 
     usermail = content['email']
     if any(user.email == usermail for user in users):
+        session.close()
         abort(400, "User with email = %s already exist" % usermail)
         return
 
@@ -185,7 +194,6 @@ def admin_update_user(user_id):
         role = session.query(Role).get(RoleName(role_id).value)
 
         if role is None:
-            session.rollback()
             session.close()
             abort(400, "Role with id = %s not found" % role_id)
             return
@@ -205,12 +213,16 @@ def admin_update_user(user_id):
 
 @auth_blueprint.route('/token/auth', methods=['POST'])
 def login():
+    session = get_session()
+
     username = request.json.get('username', None)
     password = request.json.get('password', None)
 
-    user = User.query.filter(
+    user = session.query(User).filter(
         User.name == username
     ).first()
+
+    session.close()
 
     if user is None:
         abort(401, 'User not found')
