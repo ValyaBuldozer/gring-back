@@ -71,8 +71,7 @@ put_place_schema = {
 
 @place_blueptint.route('/places', methods=['PUT'])
 @expects_json(put_place_schema)
-@returns_json
-@roles_required([RoleName.admin, RoleName.content_moder])
+@roles_required([RoleName.content_moder])
 def put_new_place():
     session = get_session()
     content = g.data
@@ -120,8 +119,7 @@ def put_new_place():
 
 @place_blueptint.route('/places/<object_id>', methods=['POST'])
 @expects_json(put_place_schema)
-@returns_json
-@roles_required([RoleName.admin, RoleName.content_moder])
+@roles_required([RoleName.content_moder])
 def post_place_by_id(object_id):
     session = get_session()
     place = session.query(Place).get(object_id)
@@ -169,8 +167,7 @@ def post_place_by_id(object_id):
 
 
 @place_blueptint.route('/places/<object_id>', methods=['DELETE'])
-@returns_json
-@roles_required([RoleName.admin, RoleName.content_moder])
+@roles_required([RoleName.content_moder])
 def delete_place_by_id(object_id):
     session = get_session()
     place = session.query(Place).get(object_id)
@@ -199,7 +196,6 @@ geolocation_schema = {
 
 @place_blueptint.route('/places/distance/<object_id>', methods=['POST'])
 @expects_json(geolocation_schema)
-@returns_json
 def get_distance_to_place(object_id):
     session = get_session()
     place = session.query(Place).get(object_id)

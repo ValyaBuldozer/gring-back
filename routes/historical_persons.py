@@ -80,8 +80,7 @@ put_historical_person_schema = {
 
 @historical_person_blueptint.route('/historical_persons', methods=['PUT'])
 @expects_json(put_historical_person_schema)
-@returns_json
-@roles_required([RoleName.admin, RoleName.content_moder])
+@roles_required([RoleName.content_moder])
 def put_new_hisrorical_person():
     content = g.data
     session = get_session()
@@ -139,8 +138,7 @@ def put_new_hisrorical_person():
 
 @historical_person_blueptint.route('/historical_persons/<object_id>', methods=['POST'])
 @expects_json(put_historical_person_schema)
-@returns_json
-@roles_required([RoleName.admin, RoleName.content_moder])
+@roles_required([RoleName.content_moder])
 def post_hisrorical_person_by_id(object_id):
     session = get_session()
     content = g.data
@@ -201,8 +199,7 @@ def post_hisrorical_person_by_id(object_id):
 
 
 @historical_person_blueptint.route('/historical_persons/<object_id>', methods=['DELETE'])
-@returns_json
-@roles_required([RoleName.admin, RoleName.content_moder])
+@roles_required([RoleName.content_moder])
 def delete_hisrorical_person_by_id(object_id):
     session = get_session()
     historical_person = session.query(HistoricalPerson).get(object_id)

@@ -47,8 +47,7 @@ put_review_schema = {
 
 @review_blueptint.route('/reviews/<entity_id>', methods=['PUT'])
 @expects_json(put_review_schema)
-@returns_json
-@roles_required([RoleName.admin, RoleName.content_moder, RoleName.user_moder, RoleName.user])
+@roles_required([RoleName.content_moder, RoleName.user_moder, RoleName.user])
 def put_new_review(entity_id):
     session = get_session()
 
@@ -87,8 +86,7 @@ def put_new_review(entity_id):
 
 
 @review_blueptint.route('/reviews/<entity_id>', methods=['DELETE'])
-@returns_json
-@roles_required([RoleName.admin, RoleName.content_moder, RoleName.user_moder, RoleName.user])
+@roles_required([RoleName.content_moder, RoleName.user_moder, RoleName.user])
 def delete_own_review_by_id(entity_id):
     session = get_session()
 
@@ -110,39 +108,3 @@ def delete_own_review_by_id(entity_id):
 
     return 'ok'
 
-
-delete_review_schema = {
-    'type': 'object',
-    'properties': {
-        'user_id': {'type': 'integer'},
-        'entity_id': {'type': 'integer'}
-    },
-    'required': ['user_id', 'entity_id']
-}
-
-
-@review_blueptint.route('/reviews/admin', methods=['DELETE'])
-@expects_json(delete_review_schema)
-@returns_json
-@roles_required([RoleName.admin, RoleName.user_moder])
-def delete_user_review():
-    content = g.data
-    session = get_session()
-
-    user_id = content['user_id']
-    entity_id = content['entity_id']
-    review = session.query(Review).filter(
-        Review.user_id == user_id,
-        Review.entity_id == entity_id
-    ).first()
-
-    if review is None:
-        session.close()
-        abort(404, "User with id = %s didn't add review to entity with id = %s yet" % (user_id, entity_id))
-        return
-
-    session.delete(review)
-    session.commit()
-    session.close()
-
-    return 'ok'

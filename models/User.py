@@ -64,7 +64,7 @@ class User(db.Model):
         return False
 
     def is_admin(self):
-        admin_roles = [RoleName.admin.value, RoleName.content_moder.value, RoleName.user_moder.value]
+        admin_roles = [RoleName.content_moder.value, RoleName.user_moder.value]
         for role in self.roles:
             if role.id in admin_roles:
                 return True

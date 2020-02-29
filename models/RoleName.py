@@ -2,8 +2,7 @@ from enum import Enum
 
 
 class RoleName(Enum):
-    admin = 1
-    content_moder = 2
-    user_moder = 3
-    user = 4
+    content_moder = 1
+    user_moder = 2
+    user = 3
 

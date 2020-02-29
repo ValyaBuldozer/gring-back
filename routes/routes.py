@@ -73,8 +73,7 @@ put_route_schema = {
 
 @routes_blueprint.route('/routes', methods=['PUT'])
 @expects_json(put_route_schema)
-@returns_json
-@roles_required([RoleName.admin, RoleName.content_moder])
+@roles_required([RoleName.content_moder])
 def put_new_route():
     content = g.data
     session = get_session()
@@ -108,8 +107,7 @@ def put_new_route():
 
 @routes_blueprint.route('/routes/<route_id>', methods=['POST'])
 @expects_json(put_route_schema)
-@returns_json
-@roles_required([RoleName.admin, RoleName.content_moder])
+@roles_required([RoleName.content_moder])
 def post_route_by_id(route_id):
     session = get_session()
     route = session.query(Route).get(route_id)
@@ -147,8 +145,7 @@ def post_route_by_id(route_id):
 
 
 @routes_blueprint.route('/routes/<route_id>', methods=['DELETE'])
-@returns_json
-@roles_required([RoleName.admin, RoleName.content_moder])
+@roles_required([RoleName.content_moder])
 def delete_route_by_id(route_id):
     session = get_session()
     route = session.query(Route).get(route_id)
