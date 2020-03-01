@@ -207,8 +207,6 @@ def get_distance_to_place(object_id):
 
     content = g.data
 
-    place = session.query(Place).get(object_id)
-
     user_geo_point = [content['longitude'], content['latitude']]
     place_geo_point = [place.geolocation.longitude, place.geolocation.latitude]
 
