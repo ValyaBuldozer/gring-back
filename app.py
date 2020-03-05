@@ -3,6 +3,7 @@ from models.base import db
 from flask_jwt_extended import JWTManager
 import os
 import logging
+from models.base import get_session
 from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import sessionmaker
 from models.Category import Category
@@ -94,6 +95,17 @@ def page_not_found(e):
 @app.errorhandler(400)
 def invalid_request(e):
     return jsonify(error=400, text=str(e)), 400
+
+
+@jwt.token_in_blacklist_loader
+def check_if_token_in_blacklist(token):
+    if token is None:
+        return True
+
+    user_id = token['identity']
+    user = User.query.get(user_id)
+
+    return not user.is_active
 
 
 if __name__ == '__main__':

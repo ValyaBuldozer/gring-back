@@ -20,7 +20,7 @@ admin_blueprint = Blueprint('admin', __name__)
 put_admin_schema = {
     'type': 'object',
     'properties': {
-        'name': {'type': 'string'},
+        'username': {'type': 'string'},
         'password': {'type': 'string'},
         'email': {'type': 'string'},
         'roles': {
@@ -29,13 +29,13 @@ put_admin_schema = {
             "minItems": 1
         }
     },
-    'required': ['name', 'password', 'email', 'roles']
+    'required': ['username', 'password', 'email', 'roles']
 }
 
 post_admin_schema = {
     'type': 'object',
     'properties': {
-        'name': {'type': 'string'},
+        'username': {'type': 'string'},
         'password': {'type': 'string'},
         'email': {'type': 'string'},
         'roles': {
@@ -56,7 +56,7 @@ def admin_register_new_user():
 
     users = session.query(User).all()
 
-    username = content['name']
+    username = content['username']
     if any(user.name == username for user in users):
         session.close()
         abort(400, "User with name = %s already exist" % username)
@@ -81,7 +81,7 @@ def admin_register_new_user():
         roles.append(role)
 
     session.add(User(
-        name=content['name'],
+        name=content['username'],
         password=bcrypt_init.bcrypt.generate_password_hash(content['password']),
         email=content['email'],
         roles=roles
@@ -103,21 +103,20 @@ def admin_update_user(user_id):
     users = session.query(User).all()
 
     user = session.query(User).get(user_id)
-
-    users = [u for u in users if u.id is not user.id]
-
     if user is None:
         session.close()
         abort(404, "User with id = %s not found" % user_id)
         return
 
-    if 'name' in content:
-        if any(user.name == content['name'] for user in users):
+    users = [u for u in users if u.id is not user.id]
+
+    if 'username' in content:
+        if any(user.name == content['username'] for user in users):
             session.close()
-            abort(400, "User with name = %s already exist" % content['name'])
+            abort(400, "User with name = %s already exist" % content['username'])
             return
         else:
-            user.name = content['name']
+            user.name = content['username']
 
     if 'email' in content:
         if any(user.email == content['email'] for user in users):

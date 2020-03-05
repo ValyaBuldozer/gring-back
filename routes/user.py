@@ -16,7 +16,7 @@ user_blueprint = Blueprint('user', __name__)
 
 
 @user_blueprint.route('/user/favorite', methods=['GET'])
-@roles_required([RoleName.content_moder, RoleName.user_moder, RoleName.user])
+@roles_required([RoleName.user])
 def get_user_favorite_place_by_id():
     session = get_session()
 
@@ -140,17 +140,17 @@ def delete_favorite_place(place_id):
 put_user_schema = {
     'type': 'object',
     'properties': {
-        'name': {'type': 'string'},
+        'username': {'type': 'string'},
         'password': {'type': 'string'},
         'email': {'type': 'string'},
     },
-    'required': ['name', 'password', 'email']
+    'required': ['username', 'password', 'email']
 }
 
 post_user_schema = {
     'type': 'object',
     'properties': {
-        'name': {'type': 'string'},
+        'username': {'type': 'string'},
         'password': {'type': 'string'},
         'email': {'type': 'string'},
     }
@@ -165,7 +165,7 @@ def basic_register_new_user():
 
     users = session.query(User).all()
 
-    username = content['name']
+    username = content['username']
     if any(user.name == username for user in users):
         session.close()
         abort(400, "User with name = %s already exist" % username)
@@ -180,7 +180,7 @@ def basic_register_new_user():
     roles = [session.query(Role).get(RoleName.user.value)]
 
     session.add(User(
-        name=content['name'],
+        name=content['username'],
         password=bcrypt_init.bcrypt.generate_password_hash(content['password']),
         email=content['email'],
         roles=roles
@@ -194,7 +194,7 @@ def basic_register_new_user():
 
 @user_blueprint.route('/user/update', methods=['POST'])
 @expects_json(post_user_schema)
-@roles_required([RoleName.content_moder, RoleName.user_moder, RoleName.user])
+@roles_required([RoleName.user])
 def basic_update_user():
     content = g.data
     session = get_session()
@@ -203,16 +203,20 @@ def basic_update_user():
 
     current_user_id = get_jwt_identity()
     user = session.query(User).get(current_user_id)
+    if user is None:
+        session.close()
+        abort(404, "User with id = %s not found" % current_user_id)
+        return
 
     users = [u for u in users if u.id is not user.id]
 
-    if 'name' in content:
-        if any(user.name == content['name'] for user in users):
+    if 'username' in content:
+        if any(user.name == content['username'] for user in users):
             session.close()
-            abort(400, "User with name = %s already exist" % content['name'])
+            abort(400, "User with name = %s already exist" % content['username'])
             return
         else:
-            user.name = content['name']
+            user.name = content['username']
 
     if 'email' in content:
         if any(user.email == content['email'] for user in users):

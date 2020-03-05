@@ -11,17 +11,30 @@ from models.User import User
 from models.base import get_session
 from util import bcrypt_init
 from flask import current_app
+from flask_expects_json import expects_json
 
 
 auth_blueprint = Blueprint('auth', __name__)
 
 
+auth_schema = {
+    'type': 'object',
+    'properties': {
+        'username': {'type': 'string'},
+        'password': {'type': 'string'}
+    },
+    'required': ['username', 'password']
+}
+
+
 @auth_blueprint.route('/token/auth', methods=['POST'])
+@expects_json(auth_schema)
 def login():
+    content = g.data
     session = get_session()
 
-    username = request.json.get('username', None)
-    password = request.json.get('password', None)
+    username = content['username']
+    password = content['password']
 
     user = session.query(User).filter(
         User.name == username
@@ -31,6 +44,10 @@ def login():
 
     if user is None:
         abort(401, 'User not found')
+        return
+
+    if not user.is_active:
+        abort(403, 'User has been banned')
         return
 
     if not bcrypt_init.bcrypt.check_password_hash(user.password, password):
