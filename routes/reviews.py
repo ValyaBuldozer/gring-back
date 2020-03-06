@@ -47,7 +47,7 @@ put_review_schema = {
 
 @review_blueptint.route('/reviews/<entity_id>', methods=['PUT'])
 @expects_json(put_review_schema)
-@roles_required([RoleName.content_moder, RoleName.user_moder, RoleName.user])
+@roles_required([RoleName.user])
 def put_new_review(entity_id):
     session = get_session()
 
@@ -86,7 +86,7 @@ def put_new_review(entity_id):
 
 
 @review_blueptint.route('/reviews/<entity_id>', methods=['DELETE'])
-@roles_required([RoleName.content_moder, RoleName.user_moder, RoleName.user])
+@roles_required([RoleName.user])
 def delete_own_review_by_id(entity_id):
     session = get_session()
 
