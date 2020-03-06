@@ -88,7 +88,7 @@ put_favorite_schema = {
 
 @user_blueprint.route('/user/favorite', methods=['POST'])
 @expects_json(put_favorite_schema)
-@roles_required([RoleName.content_moder, RoleName.user_moder, RoleName.user])
+@roles_required([RoleName.user])
 def add_new_favorite_place():
     content = g.data
     session = get_session()
@@ -117,7 +117,7 @@ def add_new_favorite_place():
 
 
 @user_blueprint.route('/user/favorite/<place_id>', methods=['DELETE'])
-@roles_required([RoleName.content_moder, RoleName.user_moder, RoleName.user])
+@roles_required([RoleName.user])
 def delete_favorite_place(place_id):
     session = get_session()
     favorite_place = session.query(Place).get(place_id)

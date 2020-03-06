@@ -102,7 +102,7 @@ def check_if_token_in_blacklist(token):
     user_id = token['identity']
     user = User.query.get(user_id)
 
-    return not user.is_active or user is None
+    return user is None or not user.is_active
 
 
 if __name__ == '__main__':
