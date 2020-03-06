@@ -99,13 +99,10 @@ def invalid_request(e):
 
 @jwt.token_in_blacklist_loader
 def check_if_token_in_blacklist(token):
-    if token is None:
-        return True
-
     user_id = token['identity']
     user = User.query.get(user_id)
 
-    return not user.is_active
+    return not user.is_active or user is None
 
 
 if __name__ == '__main__':
