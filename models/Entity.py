@@ -7,6 +7,7 @@ from statistics import mean
 
 
 class Entity(db.Model):
+
     __tablename__ = 'entity'
     id = db.Column(
         db.Integer,

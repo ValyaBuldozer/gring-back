@@ -1,5 +1,9 @@
+from uuid import uuid4
+
 from flask import Blueprint, request, abort, g
-from util.json import returns_json, to_json
+
+from models.LocaleString import LocaleString
+from util.json import returns_json, convert_to_json, validate_locate
 from models.HistoricalPerson import HistoricalPerson
 from models.City import City
 from models.Object import Object
@@ -20,7 +24,8 @@ def get_historical_persons():
 
     historical_persons = session.query(HistoricalPerson).all()
 
-    json_historical_persons = to_json(historical_persons)
+    locale = validate_locate(request.headers.get('locale'))
+    json_historical_persons = convert_to_json(historical_persons, locale)
 
     session.close()
 
@@ -38,7 +43,8 @@ def get_historical_person_by_id(object_id):
         session.close()
         abort(404, "Historical person with id = %s not found" % object_id)
 
-    json_historical_person = to_json(historical_person)
+    locale = validate_locate(request.headers.get('locale'))
+    json_historical_person = convert_to_json(historical_person, locale)
 
     session.close()
 
@@ -117,16 +123,50 @@ def put_new_hisrorical_person():
     historical_person = HistoricalPerson(
         image_link=content['image_link'],
         audioguide_link=content['audioguide_link'],
-        description=content['description'],
         city_id=content['city_id'],
-        name=content['name'],
-        second_name=content['second_name'],
-        patronymic=content['patronymic'],
         birthdate=content['birthdate'],
         deathdate=content['deathdate'],
         categories=categories,
         related_objects=related_objects,
     )
+
+    locale = validate_locate(request.headers.get('locale'))
+
+    name_id = str(uuid4())
+    locale_string = LocaleString(
+        id=name_id,
+        locale=locale,
+        text=content['name']
+    )
+    historical_person.name_id = name_id
+    historical_person.name.set(locale_string)
+
+    second_name_id = str(uuid4())
+    locale_string = LocaleString(
+        id=second_name_id,
+        locale=locale,
+        text=content['second_name']
+    )
+    historical_person.second_name_id = second_name_id
+    historical_person.second_name.set(locale_string)
+
+    patronymic_id = str(uuid4())
+    locale_string = LocaleString(
+        id=patronymic_id,
+        locale=locale,
+        text=content['second_name']
+    )
+    historical_person.patronymic_id = patronymic_id
+    historical_person.patronymic.set(locale_string)
+
+    description_id = str(uuid4())
+    locale_string = LocaleString(
+        id=description_id,
+        locale=locale,
+        text=content['description']
+    )
+    historical_person.description_id = description_id
+    historical_person.description.set(locale_string)
 
     session.add(historical_person)
 
@@ -156,13 +196,48 @@ def post_hisrorical_person_by_id(object_id):
 
     historical_person.image_link = content['image_link']
     historical_person.audioguide_link = content['audioguide_link']
-    historical_person.description = content['description']
     historical_person.city_id = content['city_id']
-    historical_person.name = content['name']
-    historical_person.second_name = content['second_name']
-    historical_person.patronymic = content['patronymic']
     historical_person.birthdate = content['birthdate']
     historical_person.deathdate = content['deathdate']
+
+    locale = validate_locate(request.headers.get('locale'))
+
+    if locale not in historical_person.name:
+        historical_person.name.set(LocaleString(
+            id=historical_person.name_id,
+            locale=locale,
+            text=content['name']
+        ))
+    else:
+        historical_person.name.get(locale).text = content['name']
+
+    if locale not in historical_person.second_name:
+        historical_person.second_name.set(LocaleString(
+            id=historical_person.second_name_id,
+            locale=locale,
+            text=content['second_name']
+        ))
+    else:
+        historical_person.second_name.get(locale).text = content['second_name']
+
+    if 'patronymic' in content:
+        if locale not in historical_person.patronymic:
+            historical_person.patronymic.set(LocaleString(
+                id=historical_person.patronymic_id,
+                locale=locale,
+                text=content['patronymic']
+            ))
+        else:
+            historical_person.patronymic.get(locale).text = content['patronymic']
+
+    if locale not in historical_person.description:
+        historical_person.description.set(LocaleString(
+            id=historical_person.description_id,
+            locale=locale,
+            text=content['description']
+        ))
+    else:
+        historical_person.description.get(locale).text = content['description']
 
     categories = []
 
@@ -199,7 +274,6 @@ def post_hisrorical_person_by_id(object_id):
 
 
 @historical_person_blueptint.route('/historical_persons/<object_id>', methods=['DELETE'])
-@roles_required([RoleName.content_moder])
 def delete_hisrorical_person_by_id(object_id):
     session = get_session()
     historical_person = session.query(HistoricalPerson).get(object_id)

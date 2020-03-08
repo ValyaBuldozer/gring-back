@@ -1,3 +1,7 @@
+from sqlalchemy.orm import relationship
+from sqlalchemy.orm.collections import attribute_mapped_collection
+
+from models.LocaleString import LocaleString
 from models.base import db
 
 
@@ -10,18 +14,37 @@ class City(db.Model):
         name="city_id",
         nullable=False
     )
-    name = db.Column(
-        db.String(30),
-        name="city_name",
+    name_id = db.Column(
+        db.String(36),
+        db.ForeignKey("locale_string.string_id"),
+        name="city_name_id",
         nullable=False
+    )
+    name = relationship(
+        LocaleString,
+        foreign_keys=[name_id],
+        uselist=True,
+        single_parent=True,
+        cascade="all, delete-orphan",
+        collection_class=attribute_mapped_collection('locale')
     )
     image_link = db.Column(
         db.String(250),
         name="city_image_link",
         nullable=False
     )
-    description = db.Column(
-        db.Text,
-        name="city_description",
+    description_id = db.Column(
+        db.String(36),
+        db.ForeignKey("locale_string.string_id"),
+        name="city_description_id",
         nullable=False
     )
+    description = relationship(
+        LocaleString,
+        foreign_keys=[description_id],
+        uselist=True,
+        single_parent=True,
+        cascade="all, delete-orphan",
+        collection_class=attribute_mapped_collection('locale')
+    )
+

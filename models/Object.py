@@ -1,3 +1,7 @@
+from sqlalchemy.orm.collections import attribute_mapped_collection
+
+from models.Language import Language
+from models.LocaleString import LocaleString
 from models.base import db
 from models.EntityType import EntityType
 from sqlalchemy.orm import relationship
@@ -8,6 +12,7 @@ from statistics import mean
 
 
 class Object(Entity):
+
     __metaclass__ = ABCMeta
     __tablename__ = "object"
     id = db.Column(
@@ -26,9 +31,19 @@ class Object(Entity):
         db.String(250),
         name="object_audioguide_link"
     )
-    description = db.Column(
-        db.Text,
-        name="object_description"
+    description_id = db.Column(
+        db.String(36),
+        db.ForeignKey("locale_string.string_id"),
+        name="object_description_id",
+        nullable=False
+    )
+    description = relationship(
+        LocaleString,
+        foreign_keys=[description_id],
+        uselist=True,
+        single_parent=True,
+        cascade="all, delete-orphan",
+        collection_class=attribute_mapped_collection('locale')
     )
     city_id = db.Column(
         db.Integer,
@@ -51,22 +66,22 @@ class Object(Entity):
     }
 
     @abstractmethod
-    def get_name(self):
+    def get_name(self, locale):
         raise NotImplementedError("Must override method get_name")
 
-    def to_json(self):
-        return self.to_base_json()
+    def to_json(self, locale):
+        return self.to_base_json(locale)
 
     # we need it because some times we need not to call child's to_json() func
-    def to_base_json(self):
+    def to_base_json(self, locale):
         return {
             'id': self.id,
-            'name': self.get_name(),
+            'name': self.get_name(locale),
             'type': self.type.name,
             'image': self.image_link,
             'audioguide': self.audioguide_link,
             'categories': self.categories,
-            'description': self.description,
+            'description': self.description.get(locale),
             'rating': {
                 'average': self.avg_rating(),
                 'count': len(self.reviews)

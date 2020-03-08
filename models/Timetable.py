@@ -33,7 +33,7 @@ class Timetable(db.Model):
         nullable=False
     )
 
-    def to_json(self):
+    def to_json(self, locale):
         return {
             'day': self.week_day.name,
             'openTime': str(self.open_time),

@@ -1,11 +1,16 @@
+from sqlalchemy.orm.collections import attribute_mapped_collection
+
+from models.Language import Language
 from models.base import db
 from sqlalchemy.orm import relationship
 from models.EntityType import EntityType
 from models.Object import Object
 from models.HistoricalPersonRelatedObjects import HistoricalPersonRelatedObjects
+from models.LocaleString import LocaleString
 
 
 class HistoricalPerson(Object):
+
     __tablename__ = "historical_person"
     id = db.Column(
         db.Integer,
@@ -14,21 +19,47 @@ class HistoricalPerson(Object):
         name="object_id",
         nullable=False
     )
-    name = db.Column(
-        db.String(20),
-        name="person_name",
+    name_id = db.Column(
+        db.String(36),
+        db.ForeignKey("locale_string.string_id"),
+        name="person_name_id",
         nullable=False
     )
-    second_name = db.Column(
-        db.String(30),
-        name="person_second_name",
+    name = relationship(
+        LocaleString,
+        foreign_keys=[name_id],
+        uselist=True,
+        single_parent=True,
+        cascade="all, delete-orphan",
+        collection_class=attribute_mapped_collection('locale')
+    )
+    second_name_id = db.Column(
+        db.String(36),
+        db.ForeignKey("locale_string.string_id"),
+        name="person_second_name_id",
         nullable=False
     )
-    patronymic = db.Column(
-        db.String(30),
-        name="person_patronymic",
-        nullable=False,
-        default=""
+    second_name = relationship(
+        LocaleString,
+        foreign_keys=[second_name_id],
+        uselist=True,
+        single_parent=True,
+        cascade="all, delete-orphan",
+        collection_class=attribute_mapped_collection('locale')
+    )
+    patronymic_id = db.Column(
+        db.String(36),
+        db.ForeignKey("locale_string.string_id"),
+        name="person_patronymic_id",
+        nullable=True
+    )
+    patronymic = relationship(
+        LocaleString,
+        foreign_keys=[patronymic_id],
+        uselist=True,
+        single_parent=True,
+        cascade="all, delete-orphan",
+        collection_class=attribute_mapped_collection('locale')
     )
     birthdate = db.Column(
         db.Date,
@@ -50,22 +81,33 @@ class HistoricalPerson(Object):
         'polymorphic_identity': EntityType.historical_person
     }
 
-    def get_name(self):
-        # TODO: only for Russian language
-        if self.patronymic is not None:
-            return "%s. %s. %s" % (self.name[0], self.patronymic[0], self.second_name)
-        else:
-            return self.name + " " + self.second_name
+    def get_name_items(self, locale):
+        name = self.name.get(locale)
+        second_name = self.second_name.get(locale)
+        patronymic = self.patronymic.get(locale)
 
-    def to_json(self):
-        object_json = super().to_json()
+        return name, second_name, patronymic
+
+    def get_name(self, locale):
+        name, second_name, patronymic = self.get_name_items(locale)
+        if name is not None and second_name is not None:
+            if patronymic is not None:
+                return ("%s. %s. %s" % (name[0],
+                                        patronymic[0],
+                                        second_name))
+            else:
+                return name + " " + second_name
+
+    def to_json(self, locale):
+        name, second_name, patronymic = self.get_name_items(locale)
+        object_json = super().to_json(locale)
         person_json = {
-            'name': self.name,
-            'secondName': self.second_name,
-            'patronymic': self.patronymic if self.patronymic is not '' else None,
+            'name': name,
+            'secondName': second_name,
+            'patronymic': patronymic,
             'birthdate': str(self.birthdate),
             'deathdate': str(self.deathdate) if self.deathdate is not None else None,
-            'relatedObjects': list(map(lambda o: o.to_base_json(), self.related_objects))
+            'relatedObjects': list(map(lambda o: o.to_base_json(locale), self.related_objects))
         }
 
         return {

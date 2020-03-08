@@ -1,12 +1,20 @@
 import json
 from flask import Response
 from functools import wraps
+from models.Language import Language
 
 
-def to_json(obj, lam=lambda o: o.to_json()):
+def validate_locate(locale):
+    if locale is None or locale not in Language.__members__:
+        return Language.ru
+
+    return Language[locale]
+
+
+def convert_to_json(obj, locale=Language.ru):
     return json.dumps(
         obj,
-        default=lam,
+        default=lambda o: o.to_json(locale),
         ensure_ascii=False,
         indent=4
     )

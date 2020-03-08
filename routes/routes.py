@@ -1,5 +1,10 @@
+from uuid import uuid4
+
 from flask import Blueprint, request, abort, g
-from util.json import to_json, returns_json
+
+from models.Language import Language
+from models.LocaleString import LocaleString
+from util.json import convert_to_json, returns_json, validate_locate
 from models.Route import Route
 from models.RoutePlaceInfo import RoutePlaceInfo
 from models.Object import Object
@@ -24,7 +29,10 @@ def get_routes():
         Route.places.any(RoutePlaceInfo.place_id == object_id) if object_id is not None else True
     ).all()
 
-    json_routes = to_json(routes, lambda r: r.to_view_json())
+    locale = validate_locate(request.headers.get('locale'))
+    mapped_objects = list(map(lambda r: r.to_view_json(locale), routes))
+
+    json_routes = convert_to_json(mapped_objects, locale)
 
     session.close()
 
@@ -42,7 +50,8 @@ def get_route_by_id(route_id):
         session.close()
         abort(404, "Route with id = %s not found" % route_id)
 
-    json_route = to_json(route)
+    locale = validate_locate(request.headers.get('locale'))
+    json_route = convert_to_json(route, locale)
 
     session.close()
 
@@ -93,11 +102,31 @@ def put_new_route():
             audioguide=place_info.get('audioguide', None)
         ))
 
-    session.add(Route(
-        name=content['name'],
-        description=content['description'],
+    route = Route(
         places=places
-    ))
+    )
+
+    locale = validate_locate(request.headers.get('locale'))
+
+    name_id = str(uuid4())
+    locale_string = LocaleString(
+        id=name_id,
+        locale=locale,
+        text=content['name']
+    )
+    route.name_id = name_id
+    route.name.set(locale_string)
+
+    description_id = str(uuid4())
+    locale_string = LocaleString(
+        id=description_id,
+        locale=locale,
+        text=content['description']
+    )
+    route.description_id = description_id
+    route.description.set(locale_string)
+
+    session.add(route)
 
     session.commit()
     session.close()
@@ -134,9 +163,27 @@ def post_route_by_id(route_id):
             audioguide=place_info.get('audioguide', None)
         ))
 
-    route.name = content['name']
-    route.description = content['description']
     route.places = places
+
+    locale = validate_locate(request.headers.get('locale'))
+
+    if locale not in route.name:
+        route.name.set(LocaleString(
+            id=route.name_id,
+            locale=locale,
+            text=content['name']
+        ))
+    else:
+        route.name.get(locale).text = content['name']
+
+    if locale not in route.description:
+        route.description.set(LocaleString(
+            id=route.description_id,
+            locale=locale,
+            text=content['description']
+        ))
+    else:
+        route.description.get(locale).text = content['description']
 
     session.commit()
     session.close()

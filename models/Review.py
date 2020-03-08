@@ -42,7 +42,7 @@ class Review(db.Model):
         name="review_text"
     )
 
-    def to_json(self):
+    def to_json(self, locale):
         return {
             'user': self.user,
             'entity': self.entity_id,

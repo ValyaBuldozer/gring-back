@@ -17,6 +17,7 @@ flask-jwt-extended = "*"
 gunicorn = "*"
 Flask-Migrate = "*"
 flask-bcrypt = "*"
+yandex.translate = "*"
 
 [requires]
 python_version = "3.6"

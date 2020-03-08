@@ -1,7 +1,7 @@
 from flask import Blueprint, g, request, abort, jsonify
 
 from models.Review import Review
-from util.json import to_json
+from util.json import convert_to_json
 from flask_jwt_extended import get_jwt_identity
 from models.base import get_session
 from models.User import User

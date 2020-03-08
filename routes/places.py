@@ -1,5 +1,9 @@
+from uuid import uuid4
+
 from flask import Blueprint, request, abort, g
-from util.json import returns_json, to_json
+
+from models.LocaleString import LocaleString
+from util.json import returns_json, convert_to_json, validate_locate
 from models.Place import Place
 from models.City import City
 from models.Geolocation import Geolocation
@@ -22,7 +26,8 @@ def get_places():
 
     places = session.query(Place).all()
 
-    json_places = to_json(places)
+    locale = validate_locate(request.headers.get('locale'))
+    json_places = convert_to_json(places, locale)
 
     session.close()
 
@@ -40,7 +45,8 @@ def get_place_by_id(object_id):
         session.close()
         abort(404, "Place with id = %s not found" % object_id)
 
-    json_place = to_json(place)
+    locale = validate_locate(request.headers.get('locale'))
+    json_place = convert_to_json(place, locale)
 
     session.close()
 
@@ -101,13 +107,39 @@ def put_new_place():
     place = Place(
         image_link=content['image_link'],
         audioguide_link=content['audioguide_link'],
-        description=content['description'],
         city_id=content['city_id'],
-        name=content['name'],
-        address=content['address'],
         geolocation=geolocation,
         categories=categories
     )
+
+    locale = validate_locate(request.headers.get('locale'))
+
+    name_id = str(uuid4())
+    locale_string = LocaleString(
+        id=name_id,
+        locale=locale,
+        text=content['name']
+    )
+    place.name_id = name_id
+    place.name.set(locale_string)
+
+    description_id = str(uuid4())
+    locale_string = LocaleString(
+        id=description_id,
+        locale=locale,
+        text=content['description']
+    )
+    place.description_id = description_id
+    place.description.set(locale_string)
+
+    address_id = str(uuid4())
+    locale_string = LocaleString(
+        id=address_id,
+        locale=locale,
+        text=content['address']
+    )
+    place.address_id = address_id
+    place.address.set(locale_string)
 
     session.add(place)
 
@@ -138,13 +170,39 @@ def post_place_by_id(object_id):
 
     place.image_link = content['image_link']
     place.audioguide_link = content['audioguide_link']
-    place.description = content['description']
     place.city_id = content['city_id']
-    place.name = content['name']
-    place.address = content['address']
     geolocation = session.query(Geolocation).get(place.geolocation_id)
     geolocation.latitude = content['latitude']
     geolocation.longitude = content['longitude']
+
+    locale = validate_locate(request.headers.get('locale'))
+
+    if locale not in place.name:
+        place.name.set(LocaleString(
+            id=place.name_id,
+            locale=locale,
+            text=content['name']
+        ))
+    else:
+        place.name.get(locale).text = content['name']
+
+    if locale not in place.description:
+        place.description.set(LocaleString(
+            id=place.description_id,
+            locale=locale,
+            text=content['description']
+        ))
+    else:
+        place.description.get(locale).text = content['description']
+
+    if locale not in place.address:
+        place.address.set(LocaleString(
+            id=place.address_id,
+            locale=locale,
+            text=content['address']
+        ))
+    else:
+        place.address.get(locale).text = content['address']
 
     categories = []
 

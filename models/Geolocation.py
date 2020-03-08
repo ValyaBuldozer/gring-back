@@ -2,6 +2,7 @@ from models.base import db
 
 
 class Geolocation(db.Model):
+
     __tablename__ = "geolocation"
     id = db.Column(
         db.Integer,
@@ -20,7 +21,7 @@ class Geolocation(db.Model):
         nullable=False
     )
 
-    def to_json(self):
+    def to_json(self, locale):
         return {
             'lat': self.latitude.to_eng_string(),
             'lng': self.longitude.to_eng_string()

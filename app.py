@@ -1,4 +1,6 @@
 from flask import Flask, jsonify, send_from_directory, request, abort
+
+from models.Language import Language
 from models.base import db
 from flask_jwt_extended import JWTManager
 import os
@@ -23,6 +25,7 @@ from models.Review import Review
 from models.Role import Role
 from models.UserRole import UserRole
 from models.UserFavoritePlace import UserFavoritePlace
+from models.LocaleString import LocaleString
 from routes.auth import auth_blueprint
 from routes.objects import object_blueprint
 from routes.routes import routes_blueprint
@@ -33,9 +36,11 @@ from routes.historical_persons import historical_person_blueptint
 from routes.categories import category_blueprint
 from routes.user import user_blueprint
 from routes.admin import admin_blueprint
+from commands.translation import translation_command_blueprint
 from util.osrm_client import osrm_init
 from flask_migrate import Migrate
 from util.bcrypt_init import bcrypt_init
+
 
 app = Flask(__name__, instance_relative_config=True)
 
@@ -54,10 +59,11 @@ app.register_blueprint(historical_person_blueptint, url_prefix=api_url_prefix)
 app.register_blueprint(category_blueprint, url_prefix=api_url_prefix)
 app.register_blueprint(user_blueprint, url_prefix=api_url_prefix)
 app.register_blueprint(admin_blueprint, url_prefix=api_url_prefix)
-
+app.register_blueprint(translation_command_blueprint)
 
 db.init_app(app)
 jwt = JWTManager(app)
+
 
 with app.app_context():
     migrate = Migrate(app, db)

@@ -1,3 +1,7 @@
+from sqlalchemy.orm.collections import attribute_mapped_collection
+
+from models.Language import Language
+from models.LocaleString import LocaleString
 from models.base import db
 from models.EntityType import EntityType
 from models.Object import Object
@@ -15,16 +19,33 @@ class Place(Object):
         name="object_id",
         nullable=False
     )
-    name = db.Column(
-        db.String(100),
-        name="place_name",
+    name_id = db.Column(
+        db.String(36),
+        db.ForeignKey("locale_string.string_id"),
+        name="place_name_id",
         nullable=False
     )
-    address = db.Column(
-        db.String(200),
-        name="place_address",
-        default="",
+    name = relationship(
+        LocaleString,
+        foreign_keys=[name_id],
+        uselist=True,
+        single_parent=True,
+        cascade="all, delete-orphan",
+        collection_class=attribute_mapped_collection('locale')
+    )
+    address_id = db.Column(
+        db.String(36),
+        db.ForeignKey("locale_string.string_id"),
+        name="place_address_id",
         nullable=False
+    )
+    address = relationship(
+        LocaleString,
+        foreign_keys=[address_id],
+        uselist=True,
+        single_parent=True,
+        cascade="all, delete-orphan",
+        collection_class=attribute_mapped_collection('locale')
     )
     geolocation_id = db.Column(
         db.Integer,
@@ -47,13 +68,13 @@ class Place(Object):
         'polymorphic_identity': EntityType.place
     }
 
-    def get_name(self):
-        return self.name
+    def get_name(self, locale):
+        return self.name.get(locale)
 
-    def to_json(self):
-        object_json = super().to_json()
+    def to_json(self, locale):
+        object_json = super().to_json(locale)
         place_json = {
-            'address': self.address,
+            'address': self.address.get(locale),
             'geolocation': self.geolocation,
             'routes': list(
                 map(lambda r: r.route_id, self.routes)),

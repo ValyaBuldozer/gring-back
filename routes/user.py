@@ -1,5 +1,5 @@
 from flask import Blueprint, g, request, abort, jsonify
-from util.json import to_json
+from util.json import convert_to_json
 from flask_jwt_extended import get_jwt_identity
 from models.base import get_session
 from models.User import User
@@ -23,7 +23,7 @@ def get_user_favorite_place_by_id():
     current_user_id = get_jwt_identity()
     user = session.query(User).get(current_user_id)
 
-    json_place = to_json(user.favorite_places)
+    json_place = convert_to_json(user.favorite_places)
 
     session.close()
 

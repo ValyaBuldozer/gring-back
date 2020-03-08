@@ -2,7 +2,7 @@ from flask import Blueprint, request, abort, g
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from models.Entity import Entity
-from util.json import returns_json, to_json
+from util.json import returns_json, convert_to_json
 from models.Review import Review
 from models.Object import Object
 from models.base import get_session
@@ -28,7 +28,7 @@ def get_reviews():
         Review.entity_id == entity_id if entity_id is not None else True
     ).limit(limit).all()
 
-    json_reviews = to_json(reviews)
+    json_reviews = convert_to_json(reviews)
 
     session.close()
 
