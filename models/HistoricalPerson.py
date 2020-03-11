@@ -52,8 +52,8 @@ class HistoricalPerson(Object):
 
     def get_name(self):
         # TODO: only for Russian language
-        if len(self.patronymic) > 0:
-            return ("%s. %s. %s" % (self.name[0], self.patronymic[0], self.second_name))
+        if self.patronymic is not None:
+            return "%s. %s. %s" % (self.name[0], self.patronymic[0], self.second_name)
         else:
             return self.name + " " + self.second_name
 
