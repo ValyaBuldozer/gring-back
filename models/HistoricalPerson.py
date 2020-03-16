@@ -81,15 +81,10 @@ class HistoricalPerson(Object):
         'polymorphic_identity': EntityType.historical_person
     }
 
-    def get_name_items(self, locale):
+    def get_name(self, locale):
         name = self.name.get(locale)
         second_name = self.second_name.get(locale)
         patronymic = self.patronymic.get(locale)
-
-        return name, second_name, patronymic
-
-    def get_name(self, locale):
-        name, second_name, patronymic = self.get_name_items(locale)
         if name is not None and second_name is not None:
             if patronymic is not None:
                 return ("%s. %s. %s" % (name[0],
@@ -99,7 +94,9 @@ class HistoricalPerson(Object):
                 return name + " " + second_name
 
     def to_json(self, locale):
-        name, second_name, patronymic = self.get_name_items(locale)
+        name = self.name.get(locale)
+        second_name = self.second_name.get(locale)
+        patronymic = self.patronymic.get(locale)
         object_json = super().to_json(locale)
         person_json = {
             'name': name,

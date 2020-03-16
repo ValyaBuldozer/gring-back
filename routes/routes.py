@@ -167,23 +167,17 @@ def post_route_by_id(route_id):
 
     locale = validate_locate(request.headers.get('locale'))
 
-    if locale not in route.name:
-        route.name.set(LocaleString(
-            id=route.name_id,
-            locale=locale,
-            text=content['name']
-        ))
-    else:
-        route.name.get(locale).text = content['name']
+    route.name.set(LocaleString(
+        id=route.name_id,
+        locale=locale,
+        text=content['name']
+    ))
 
-    if locale not in route.description:
-        route.description.set(LocaleString(
-            id=route.description_id,
-            locale=locale,
-            text=content['description']
-        ))
-    else:
-        route.description.get(locale).text = content['description']
+    route.description.set(LocaleString(
+        id=route.description_id,
+        locale=locale,
+        text=content['description']
+    ))
 
     session.commit()
     session.close()

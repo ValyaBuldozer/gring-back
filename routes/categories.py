@@ -64,7 +64,7 @@ put_category_schema = {
 
 @category_blueprint.route('/categories', methods=['PUT'])
 @expects_json(put_category_schema)
-def put_new_place():
+def put_new_category():
     session = get_session()
     content = g.data
 
@@ -90,7 +90,7 @@ def put_new_place():
 
 @category_blueprint.route('/categories/<category_id>', methods=['POST'])
 @expects_json(put_category_schema)
-def post_place_by_id(category_id):
+def post_category_by_id(category_id):
     session = get_session()
     category = session.query(Category).get(category_id)
 
@@ -102,14 +102,11 @@ def post_place_by_id(category_id):
     content = g.data
     locale = validate_locate(request.headers.get('locale'))
 
-    if locale not in category.name:
-        category.name.set(LocaleString(
-            id=category.name_id,
-            locale=locale,
-            text=content['name']
-        ))
-    else:
-        category.name.get(locale).text = content['name']
+    category.name.set(LocaleString(
+        id=category.name_id,
+        locale=locale,
+        text=content['name']
+    ))
 
     session.commit()
     session.close()

@@ -205,32 +205,23 @@ def post_public_place_by_id(object_id):
 
     locale = validate_locate(request.headers.get('locale'))
 
-    if locale not in public_place.name:
-        public_place.name.set(LocaleString(
-            id=public_place.name_id,
-            locale=locale,
-            text=content['name']
-        ))
-    else:
-        public_place.name.get(locale).text = content['name']
+    public_place.name.set(LocaleString(
+        id=public_place.name_id,
+        locale=locale,
+        text=content['name']
+    ))
 
-    if locale not in public_place.description:
-        public_place.description.set(LocaleString(
-            id=public_place.description_id,
-            locale=locale,
-            text=content['description']
-        ))
-    else:
-        public_place.description.get(locale).text = content['description']
+    public_place.description.set(LocaleString(
+        id=public_place.description_id,
+        locale=locale,
+        text=content['description']
+    ))
 
-    if locale not in public_place.address:
-        public_place.address.set(LocaleString(
-            id=public_place.address_id,
-            locale=locale,
-            text=content['address']
-        ))
-    else:
-        public_place.address.get(locale).text = content['address']
+    public_place.address.set(LocaleString(
+        id=public_place.address_id,
+        locale=locale,
+        text=content['address']
+    ))
 
     categories = []
 

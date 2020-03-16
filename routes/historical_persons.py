@@ -154,7 +154,7 @@ def put_new_hisrorical_person():
     locale_string = LocaleString(
         id=patronymic_id,
         locale=locale,
-        text=content['second_name']
+        text=content['patronymic']
     )
     historical_person.patronymic_id = patronymic_id
     historical_person.patronymic.set(locale_string)
@@ -202,42 +202,30 @@ def post_hisrorical_person_by_id(object_id):
 
     locale = validate_locate(request.headers.get('locale'))
 
-    if locale not in historical_person.name:
-        historical_person.name.set(LocaleString(
-            id=historical_person.name_id,
-            locale=locale,
-            text=content['name']
-        ))
-    else:
-        historical_person.name.get(locale).text = content['name']
+    historical_person.name.set(LocaleString(
+        id=historical_person.name_id,
+        locale=locale,
+        text=content['name']
+    ))
 
-    if locale not in historical_person.second_name:
-        historical_person.second_name.set(LocaleString(
-            id=historical_person.second_name_id,
-            locale=locale,
-            text=content['second_name']
-        ))
-    else:
-        historical_person.second_name.get(locale).text = content['second_name']
+    historical_person.second_name.set(LocaleString(
+        id=historical_person.second_name_id,
+        locale=locale,
+        text=content['second_name']
+    ))
 
     if 'patronymic' in content:
-        if locale not in historical_person.patronymic:
-            historical_person.patronymic.set(LocaleString(
-                id=historical_person.patronymic_id,
-                locale=locale,
-                text=content['patronymic']
-            ))
-        else:
-            historical_person.patronymic.get(locale).text = content['patronymic']
-
-    if locale not in historical_person.description:
-        historical_person.description.set(LocaleString(
-            id=historical_person.description_id,
+        historical_person.patronymic.set(LocaleString(
+            id=historical_person.patronymic_id,
             locale=locale,
-            text=content['description']
+            text=content['patronymic']
         ))
-    else:
-        historical_person.description.get(locale).text = content['description']
+
+    historical_person.description.set(LocaleString(
+        id=historical_person.description_id,
+        locale=locale,
+        text=content['description']
+    ))
 
     categories = []
 
