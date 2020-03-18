@@ -85,13 +85,13 @@ class HistoricalPerson(Object):
         name = self.name.get(locale)
         second_name = self.second_name.get(locale)
         patronymic = self.patronymic.get(locale)
-        if name is not None and second_name is not None:
-            if patronymic is not None:
-                return ("%s. %s. %s" % (name[0],
-                                        patronymic[0],
-                                        second_name))
-            else:
-                return name + " " + second_name
+
+        if name is None or second_name is None:
+            return None
+        elif patronymic is None:
+            return name + " " + second_name
+        else:
+            return "%s. %s. %s" % (name.text[0], patronymic.text[0], second_name.text)
 
     def to_json(self, locale):
         name = self.name.get(locale)
