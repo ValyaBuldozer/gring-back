@@ -89,7 +89,7 @@ class HistoricalPerson(Object):
         if name is None or second_name is None:
             return None
         elif patronymic is None:
-            return name + " " + second_name
+            return name.text + " " + second_name.text
         else:
             return "%s. %s. %s" % (name.text[0], patronymic.text[0], second_name.text)
 
