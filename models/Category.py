@@ -13,6 +13,11 @@ class Category(db.Model):
         name="category_id",
         nullable=False
     )
+    alias = db.Column(
+        db.String(30),
+        name="category_alias",
+        nullable=False
+    )
     name_id = db.Column(
         db.String(36),
         db.ForeignKey("locale_string.string_id"),

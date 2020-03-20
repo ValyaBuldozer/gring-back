@@ -13,7 +13,13 @@ object_blueprint = Blueprint('objects', __name__)
 def get_objects():
     session = get_session()
 
-    objects = session.query(Object).all()
+    object_type = request.args.get('type')
+    category = request.args.get('category')
+
+    objects = session.query(Object).filter(
+        Object.type == object_type if 'type' in request.args else True,
+        Object.categories.any(Category.alias == category) if 'category' in request.args else True
+    ).all()
 
     locale = validate_locate(request.headers.get('locale'))
     mapped_objects = list(map(lambda o: o.to_base_json(locale), objects))
