@@ -8,21 +8,21 @@ class LocaleLink(db.Model):
     id = db.Column(
         db.String(36),
         primary_key=True,
-        name="string_id",
+        name="link_id",
         nullable=False
     )
     locale = db.Column(
         db.Enum(Language),
         primary_key=True,
-        name="string_locale",
+        name="link_locale",
         nullable=False
     )
-    text = db.Column(
+    path = db.Column(
         db.Text,
-        name="string_content",
+        name="link_path",
         nullable=False
     )
 
     def to_json(self, locale):
-        return self.text
+        return self.path
 
