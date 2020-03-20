@@ -1,6 +1,7 @@
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
 from models.Language import Language
+from models.LocaleLink import LocaleLink
 from models.LocaleString import LocaleString
 from models.base import db
 from sqlalchemy.orm import relationship
@@ -46,18 +47,28 @@ class RoutePlaceInfo(db.Model):
         cascade="all, delete-orphan",
         collection_class=attribute_mapped_collection('locale')
     )
-    audioguide = db.Column(
-        db.String(250),
-        name="route_place_audioguide_link",
+    audioguide_link_id = db.Column(
+        db.String(36),
+        db.ForeignKey("locale_link.string_id"),
+        name="route_place_audioguide_link_id",
         nullable=True
+    )
+    audioguide_link = relationship(
+        LocaleLink,
+        foreign_keys=[audioguide_link_id],
+        uselist=True,
+        single_parent=True,
+        cascade="all, delete-orphan",
+        collection_class=attribute_mapped_collection('locale')
     )
 
     def to_json(self, locale):
         object_dict = self.place.to_base_json(locale)
         description = self.description.get(locale)
+        audioguide = self.audioguide_link.get(locale)
 
         return {
             **object_dict,
             "description": object_dict["description"] if description is None else description,
-            "audioguide": object_dict["audioguide"] if self.audioguide is None else self.audioguide
+            "audioguide": object_dict["audioguide"] if audioguide is None else audioguide
         }

@@ -106,7 +106,6 @@ def put_new_place():
 
     place = Place(
         image_link=content['image_link'],
-        audioguide_link=content['audioguide_link'],
         city_id=content['city_id'],
         geolocation=geolocation,
         categories=categories
@@ -141,6 +140,15 @@ def put_new_place():
     place.address_id = address_id
     place.address.set(locale_string)
 
+    audioguide_link_id = str(uuid4())
+    locale_string = LocaleString(
+        id=audioguide_link_id,
+        locale=locale,
+        text=content['audioguide_link']
+    )
+    place.audioguide_link_id = audioguide_link_id
+    place.audioguide_link.set(locale_string)
+
     session.add(place)
 
     session.commit()
@@ -169,7 +177,6 @@ def post_place_by_id(object_id):
         return
 
     place.image_link = content['image_link']
-    place.audioguide_link = content['audioguide_link']
     place.city_id = content['city_id']
     geolocation = session.query(Geolocation).get(place.geolocation_id)
     geolocation.latitude = content['latitude']
@@ -193,6 +200,12 @@ def post_place_by_id(object_id):
         id=place.address_id,
         locale=locale,
         text=content['address']
+    ))
+
+    place.audioguide_link.set(LocaleString(
+        id=place.audioguide_link_id,
+        locale=locale,
+        text=content['audioguide_link']
     ))
 
     categories = []

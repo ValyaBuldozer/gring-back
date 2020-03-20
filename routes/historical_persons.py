@@ -122,7 +122,6 @@ def put_new_hisrorical_person():
 
     historical_person = HistoricalPerson(
         image_link=content['image_link'],
-        audioguide_link=content['audioguide_link'],
         city_id=content['city_id'],
         birthdate=content['birthdate'],
         deathdate=content['deathdate'],
@@ -167,6 +166,15 @@ def put_new_hisrorical_person():
     )
     historical_person.description_id = description_id
     historical_person.description.set(locale_string)
+
+    audioguide_link_id = str(uuid4())
+    locale_string = LocaleString(
+        id=audioguide_link_id,
+        locale=locale,
+        text=content['audioguide_link']
+    )
+    historical_person.audioguide_link_id = audioguide_link_id
+    historical_person.audioguide_link.set(locale_string)
 
     session.add(historical_person)
 
@@ -220,6 +228,12 @@ def post_hisrorical_person_by_id(object_id):
             locale=locale,
             text=content['patronymic']
         ))
+
+    historical_person.audioguide_link.set(LocaleString(
+        id=historical_person.audioguide_link_id,
+        locale=locale,
+        text=content['audioguide_link']
+    ))
 
     historical_person.description.set(LocaleString(
         id=historical_person.description_id,

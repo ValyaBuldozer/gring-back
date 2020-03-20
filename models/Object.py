@@ -1,6 +1,7 @@
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
 from models.Language import Language
+from models.LocaleLink import LocaleLink
 from models.LocaleString import LocaleString
 from models.base import db
 from models.EntityType import EntityType
@@ -27,9 +28,19 @@ class Object(Entity):
         name="object_image_link",
         nullable=False
     )
-    audioguide_link = db.Column(
-        db.String(250),
-        name="object_audioguide_link"
+    audioguide_link_id = db.Column(
+        db.String(36),
+        db.ForeignKey("locale_link.string_id"),
+        name="object_audioguide_link_id",
+        nullable=True
+    )
+    audioguide_link = relationship(
+        LocaleLink,
+        foreign_keys=[audioguide_link_id],
+        uselist=True,
+        single_parent=True,
+        cascade="all, delete-orphan",
+        collection_class=attribute_mapped_collection('locale')
     )
     description_id = db.Column(
         db.String(36),
