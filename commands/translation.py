@@ -10,8 +10,8 @@ translation_command_blueprint = Blueprint('translation', __name__)
 
 @translation_command_blueprint.cli.command("create-locale")
 @click.argument("locale")
-@click.argument('with_update')
-def create_locale(locale, with_update):
+@click.argument('with_update', required=False)
+def create_locale(locale, with_update=None):
     if locale is None or locale not in Language.__members__:
         print('%s is unsupported language' % locale)
         return

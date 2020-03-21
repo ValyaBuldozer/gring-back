@@ -10,8 +10,9 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-from migrations.util.localize_table import localize_link
+from migrations.util.localize_table import localize_two_id_table, localize_one_id_table
 from models.LocaleLink import LocaleLink
+from models.Object import Object
 from models.RoutePlaceInfo import RoutePlaceInfo
 
 revision = '0bab6544b4d8'
@@ -30,15 +31,26 @@ def upgrade():
     sa.Column('link_path', sa.Text(), nullable=False),
     sa.PrimaryKeyConstraint('link_id', 'link_locale')
     )
+
     op.add_column('object', sa.Column('object_audioguide_link_id', sa.String(length=36), nullable=True))
+    locale_update = localize_one_id_table(
+        conn=conn,
+        table=Object.__table__,
+        id_col_name='object_id',
+        text_col_names=['object_audioguide_link'],
+        local_type='link'
+    )
+    op.bulk_insert(LocaleLink.__table__, locale_update)
     op.create_foreign_key(None, 'object', 'locale_link', ['object_audioguide_link_id'], ['link_id'])
     op.drop_column('object', 'object_audioguide_link')
+
     op.add_column('route_place_info', sa.Column('route_place_audioguide_link_id', sa.String(length=36), nullable=True))
-    locale_update = localize_link(
+    locale_update = localize_two_id_table(
         conn=conn,
         table=RoutePlaceInfo.__table__,
         col_id_names=['place_id', 'route_id'],
-        text_col_names=['route_place_audioguide_link']
+        text_col_names=['route_place_audioguide_link'],
+        local_type='link'
     )
     op.bulk_insert(LocaleLink.__table__, locale_update)
     op.create_foreign_key(None, 'route_place_info', 'locale_link', ['route_place_audioguide_link_id'], ['link_id'])
