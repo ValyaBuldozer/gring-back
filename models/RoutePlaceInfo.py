@@ -49,7 +49,7 @@ class RoutePlaceInfo(db.Model):
     )
     audioguide_link_id = db.Column(
         db.String(36),
-        db.ForeignKey("locale_link.string_id"),
+        db.ForeignKey("locale_link.link_id"),
         name="route_place_audioguide_link_id",
         nullable=True
     )

@@ -30,7 +30,7 @@ class Object(Entity):
     )
     audioguide_link_id = db.Column(
         db.String(36),
-        db.ForeignKey("locale_link.string_id"),
+        db.ForeignKey("locale_link.link_id"),
         name="object_audioguide_link_id",
         nullable=True
     )
@@ -90,7 +90,7 @@ class Object(Entity):
             'name': self.get_name(locale),
             'type': self.type.name,
             'image': self.image_link,
-            'audioguide': self.audioguide_link,
+            'audioguide': self.audioguide_link.get(locale),
             'categories': self.categories,
             'description': self.description.get(locale),
             'rating': {
