@@ -3,7 +3,7 @@ from sqlalchemy import desc
 from models.RoleName import RoleName
 from models.Role import Role
 from models.base import db
-from models.UserFavoritePlace import UserFavoritePlace
+from models.UserFavorite import UserFavorite
 from sqlalchemy.orm import relationship
 from models.base import get_session
 
@@ -45,12 +45,17 @@ class User(db.Model):
         single_parent=True,
         backref=db.backref('user')
     )
-    favorite_places = relationship(
-        "Place",
-        secondary="user_favorite_place",
+    favorites = relationship(
+        "Entity",
+        secondary="user_favorite",
         single_parent=True,
-        order_by=desc(UserFavoritePlace.c.add_time),
+        order_by=desc(UserFavorite.c.add_time),
         backref=db.backref('user')
+    )
+    image = db.Column(
+        db.String(41),
+        name="user_image",
+        nullable=True
     )
 
     def can(self, allowed_roles):

@@ -1,9 +1,14 @@
-from flask import Blueprint, g, request, abort, jsonify
+import os
+import uuid
+
+from flask import Blueprint, g, request, abort, jsonify, current_app
+from js2py.node_import import DIRNAME
+
+from models.Entity import Entity
 from util.json import convert_to_json
 from flask_jwt_extended import get_jwt_identity
 from models.base import get_session
 from models.User import User
-from models.Place import Place
 from models.RoleName import RoleName
 from util.decorators import roles_required
 from util.current_user import get_current_user
@@ -17,17 +22,17 @@ user_blueprint = Blueprint('user', __name__)
 
 @user_blueprint.route('/user/favorite', methods=['GET'])
 @roles_required([RoleName.user])
-def get_user_favorite_place_by_id():
+def get_user_favorite_by_id():
     session = get_session()
 
     current_user_id = get_jwt_identity()
     user = session.query(User).get(current_user_id)
 
-    json_place = convert_to_json(user.favorite_places)
+    json_favorites = convert_to_json(user.favorites)
 
     session.close()
 
-    return json_place
+    return json_favorites
 
 
 @user_blueprint.route('/user/block/<user_id>', methods=['POST'])
@@ -80,35 +85,36 @@ def unblock_user_by_id(user_id):
 put_favorite_schema = {
     'type': 'object',
     'properties': {
-        'place_id': {'type': 'integer'},
+        'entity_id': {'type': 'integer'},
     },
-    'required': ['place_id']
+    'required': ['entity_id']
 }
 
 
 @user_blueprint.route('/user/favorite', methods=['POST'])
 @expects_json(put_favorite_schema)
 @roles_required([RoleName.user])
-def add_new_favorite_place():
+def add_new_favorite():
     content = g.data
     session = get_session()
 
-    place_id = content['place_id']
-    favorite_place = session.query(Place).get(place_id)
+    entity_id = content['entity_id']
+    favorite = session.query(Entity).get(entity_id)
 
-    if favorite_place is None:
+    if favorite is None:
         session.close()
-        abort(400, "Place with id = %s not found" % place_id)
+        abort(400, "Entity with id = %s not found" % entity_id)
         return
 
-    user = get_current_user()
+    current_user_id = get_jwt_identity()
+    user = session.query(User).get(current_user_id)
 
-    if any(place.id == favorite_place.id for place in user.favorite_places):
+    if any(entity.id == favorite.id for entity in user.favorites):
         session.close()
-        abort(400, "Place with id = %s already added to favorites" % favorite_place.id)
+        abort(400, "Entity with id = %s already added to favorites" % favorite.id)
         return
 
-    user.favorite_places.append(favorite_place)
+    user.favorites.append(favorite)
 
     session.commit()
     session.close()
@@ -116,20 +122,21 @@ def add_new_favorite_place():
     return 'ok'
 
 
-@user_blueprint.route('/user/favorite/<place_id>', methods=['DELETE'])
+@user_blueprint.route('/user/favorite/<entity_id>', methods=['DELETE'])
 @roles_required([RoleName.user])
-def delete_favorite_place(place_id):
+def delete_favorite(entity_id):
     session = get_session()
-    favorite_place = session.query(Place).get(place_id)
+    favorite = session.query(Entity).get(entity_id)
 
-    if favorite_place is None:
+    if favorite is None:
         session.close()
-        abort(404, "Place with id = %s not found" % place_id)
+        abort(404, "Entity with id = %s not found" % entity_id)
         return
 
-    user = get_current_user()
+    current_user_id = get_jwt_identity()
+    user = session.query(User).get(current_user_id)
 
-    user.favorite_places.remove(favorite_place)
+    user.favorites.remove(favorite)
 
     session.commit()
     session.close()
@@ -228,6 +235,65 @@ def basic_update_user():
 
     if 'password' in content:
         user.password = bcrypt_init.bcrypt.generate_password_hash(content['password'])
+
+    session.commit()
+    session.close()
+
+    return 'ok'
+
+
+@user_blueprint.route('/user/image', methods=['POST'])
+@roles_required([RoleName.user])
+def upload_image():
+    session = get_session()
+
+    if 'image' not in request.files:
+        return abort(400, 'No file to save')
+
+    image = request.files['image']
+
+    if image.filename == '':
+        return abort(400, 'No files to save')
+
+    ext = image.filename.rsplit('.', 1)[::-1][0]
+
+    if ext not in current_app.config['ALLOWED_EXTENSIONS']:
+        return abort(400, 'This file type is not allowed')
+
+    image.filename = str(uuid.uuid1()) + '.' + ext
+    image.save(os.path.join(DIRNAME, current_app.config['ASSETS_PATH'], image.filename))
+
+    current_user_id = get_jwt_identity()
+    user = session.query(User).get(current_user_id)
+
+    if user.image is not None:
+        path = os.path.join(DIRNAME, current_app.config['ASSETS_PATH'], user.image)
+        if os.path.isfile(path):
+            os.remove(os.path.join(DIRNAME, current_app.config['ASSETS_PATH'], user.image))
+
+    user.image = image.filename
+
+    session.commit()
+    session.close()
+
+    return 'ok'
+
+
+@user_blueprint.route('/user/image', methods=['DELETE'])
+@roles_required([RoleName.user])
+def delete_image():
+    session = get_session()
+
+    current_user_id = get_jwt_identity()
+    user = session.query(User).get(current_user_id)
+
+    if user.image is not None:
+        path = os.path.join(DIRNAME, current_app.config['ASSETS_PATH'], user.image)
+        if os.path.isfile(path):
+            os.remove(os.path.join(DIRNAME, current_app.config['ASSETS_PATH'], user.image))
+        user.image = None
+    else:
+        return abort(400, 'User has no picture to delete')
 
     session.commit()
     session.close()

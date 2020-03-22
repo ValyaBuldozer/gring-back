@@ -2,8 +2,8 @@ from models.base import db
 import datetime
 
 
-UserFavoritePlace = db.Table(
-    "user_favorite_place",
+UserFavorite = db.Table(
+    "user_favorite",
     db.metadata,
     db.Column(
         "user_id",
@@ -13,9 +13,9 @@ UserFavoritePlace = db.Table(
         nullable=False
     ),
     db.Column(
-        "place_id",
+        "entity_id",
         db.Integer,
-        db.ForeignKey("place.object_id", ondelete="cascade"),
+        db.ForeignKey("entity.entity_id", ondelete="cascade"),
         index=True,
         nullable=False
     ),

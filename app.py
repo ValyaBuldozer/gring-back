@@ -24,7 +24,7 @@ from models.User import User
 from models.Review import Review
 from models.Role import Role
 from models.UserRole import UserRole
-from models.UserFavoritePlace import UserFavoritePlace
+from models.UserFavorite import UserFavorite
 from models.LocaleString import LocaleString
 from models.LocaleLink import LocaleLink
 from routes.auth import auth_blueprint

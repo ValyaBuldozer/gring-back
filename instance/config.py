@@ -13,3 +13,6 @@ REFRESH_TOKEN_EXPIRES_DAYS = 10
 
 JWT_BLACKLIST_ENABLED = True
 JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+

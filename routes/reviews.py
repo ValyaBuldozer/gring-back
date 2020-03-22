@@ -2,6 +2,7 @@ from flask import Blueprint, request, abort, g
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from models.Entity import Entity
+from models.User import User
 from util.json import returns_json, convert_to_json
 from models.Review import Review
 from models.Object import Object
@@ -56,7 +57,8 @@ def put_new_review(entity_id):
         abort(404, 'Entity not found')
         return
 
-    user = get_current_user()
+    current_user_id = get_jwt_identity()
+    user = session.query(User).get(current_user_id)
 
     review = session.query(Review).filter(
         Review.user_id == user.id,
@@ -90,7 +92,8 @@ def put_new_review(entity_id):
 def delete_own_review_by_id(entity_id):
     session = get_session()
 
-    user = get_current_user()
+    current_user_id = get_jwt_identity()
+    user = session.query(User).get(current_user_id)
 
     review = session.query(Review).filter(
         Review.user_id == user.id,
