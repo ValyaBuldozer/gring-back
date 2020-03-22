@@ -15,4 +15,4 @@ JWT_BLACKLIST_ENABLED = True
 JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
-
+MAX_CONTENT_LENGTH = 5 * 1024 * 1024
