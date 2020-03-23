@@ -1,3 +1,5 @@
+import os
+
 # common Flask env config
 API_URL_PREFIX = '/api'
 ASSETS_PATH = './assets'
@@ -13,6 +15,8 @@ REFRESH_TOKEN_EXPIRES_DAYS = 10
 
 JWT_BLACKLIST_ENABLED = True
 JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
+
+DIRNAME = os.path.dirname(os.path.abspath(__file__))
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 MAX_CONTENT_LENGTH = 5 * 1024 * 1024

@@ -2,7 +2,6 @@ import os
 import uuid
 
 from flask import Blueprint, g, request, abort, jsonify, current_app
-from js2py.node_import import DIRNAME
 
 from models.Entity import Entity
 from util.json import convert_to_json
@@ -261,22 +260,25 @@ def upload_image():
         return abort(400, 'This file type is not allowed')
 
     image.filename = str(uuid.uuid1()) + '.' + ext
-    image.save(os.path.join(DIRNAME, current_app.config['ASSETS_PATH'], image.filename))
+    current_path = current_app.config['DIRNAME']
+    assets_path = current_app.config['ASSETS_PATH']
+
+    image.save(os.path.join(current_path, assets_path, image.filename))
 
     current_user_id = get_jwt_identity()
     user = session.query(User).get(current_user_id)
 
     if user.image is not None:
-        path = os.path.join(DIRNAME, current_app.config['ASSETS_PATH'], user.image)
+        path = os.path.join(current_path, assets_path, user.image)
         if os.path.isfile(path):
-            os.remove(os.path.join(DIRNAME, current_app.config['ASSETS_PATH'], user.image))
+            os.remove(os.path.join(current_path, assets_path, user.image))
 
     user.image = image.filename
 
     session.commit()
     session.close()
 
-    return 'ok'
+    return 'assets/' + image.filename
 
 
 @user_blueprint.route('/user/image', methods=['DELETE'])
