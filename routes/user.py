@@ -1,8 +1,7 @@
 import os
-import uuid
-
+from uuid import uuid4
 from flask import Blueprint, g, request, abort, jsonify, current_app
-
+from flask_avatars import Identicon
 from models.Entity import Entity
 from util.json import convert_to_json
 from flask_jwt_extended import get_jwt_identity
@@ -17,6 +16,21 @@ from util import bcrypt_init
 
 
 user_blueprint = Blueprint('user', __name__)
+
+
+@user_blueprint.route('/user', methods=['GET'])
+@roles_required([RoleName.user])
+def get_current_user():
+    session = get_session()
+
+    current_user_id = get_jwt_identity()
+    user = session.query(User).get(current_user_id)
+
+    json_user = convert_to_json(user)
+
+    session.close()
+
+    return json_user
 
 
 @user_blueprint.route('/user/favorite', methods=['GET'])
@@ -185,11 +199,24 @@ def basic_register_new_user():
 
     roles = [session.query(Role).get(RoleName.user.value)]
 
+    avatar = Identicon()
+    path = current_app.config['ASSETS_PATH']
+    filename = '%s.png' % str(uuid4())
+    size = 150
+
+    image_byte_array = avatar.get_image(
+        string=username,
+        width=int(size),
+        height=int(size),
+        pad=int(size * 0.1))
+    avatar.save(image_byte_array, save_location=os.path.join(path, filename))
+
     session.add(User(
         name=content['username'],
         password=bcrypt_init.bcrypt.generate_password_hash(content['password']),
         email=content['email'],
-        roles=roles
+        roles=roles,
+        image=filename
     ))
 
     session.commit()
@@ -259,7 +286,7 @@ def upload_image():
     if ext not in current_app.config['ALLOWED_EXTENSIONS']:
         return abort(400, 'This file type is not allowed')
 
-    image.filename = str(uuid.uuid1()) + '.' + ext
+    image.filename = str(uuid4()) + '.' + ext
     current_path = current_app.config['DIRNAME']
     assets_path = current_app.config['ASSETS_PATH']
 

@@ -41,6 +41,7 @@ from commands.translation import translation_command_blueprint
 from util.osrm_client import osrm_init
 from flask_migrate import Migrate
 from util.bcrypt_init import bcrypt_init
+from util.avatars_init import avatars_init
 
 
 app = Flask(__name__, instance_relative_config=True)
@@ -69,6 +70,7 @@ jwt = JWTManager(app)
 with app.app_context():
     migrate = Migrate(app, db)
     bcrypt_init(app)
+    avatars_init(app)
     osrm_init()
 
 
