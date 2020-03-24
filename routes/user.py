@@ -289,10 +289,13 @@ def delete_image():
     current_user_id = get_jwt_identity()
     user = session.query(User).get(current_user_id)
 
+    current_path = current_app.config['DIRNAME']
+    assets_path = current_app.config['ASSETS_PATH']
+
     if user.image is not None:
-        path = os.path.join(DIRNAME, current_app.config['ASSETS_PATH'], user.image)
+        path = os.path.join(current_path, assets_path, user.image)
         if os.path.isfile(path):
-            os.remove(os.path.join(DIRNAME, current_app.config['ASSETS_PATH'], user.image))
+            os.remove(os.path.join(current_path, assets_path, user.image))
         user.image = None
     else:
         return abort(400, 'User has no picture to delete')
