@@ -4,10 +4,11 @@ from models.User import User
 from models.base import get_session
 from util.avatars_init import get_default_avatar
 
-translation_command_blueprint = Blueprint('image', __name__)
+
+avatar_command_blueprint = Blueprint('avatar', __name__)
 
 
-@translation_command_blueprint.cli.command("create-default")
+@avatar_command_blueprint.cli.command("create-default")
 def create_default():
     session = get_session()
 
