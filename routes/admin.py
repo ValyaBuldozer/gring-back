@@ -3,6 +3,7 @@ from uuid import uuid4
 from flask import Blueprint, g, request, abort, jsonify, current_app
 from flask_avatars import Identicon
 from models.Review import Review
+from util.avatars_init import get_default_avatar
 from util.json import convert_to_json
 from flask_jwt_extended import get_jwt_identity
 from models.base import get_session
@@ -82,23 +83,16 @@ def admin_register_new_user():
 
         roles.append(role)
 
-    avatar = Identicon()
-    path = current_app.config['ASSETS_PATH']
-    filename = '%s.png' % str(uuid4())
-    size = 150
+    roles = [session.query(Role).get(RoleName.user.value)]
 
-    image_byte_array = avatar.get_image(
-        string=username,
-        width=int(size),
-        height=int(size),
-        pad=int(size * 0.1))
-    avatar.save(image_byte_array, save_location=os.path.join(path, filename))
+    image = get_default_avatar(username)
 
     session.add(User(
         name=content['username'],
         password=bcrypt_init.bcrypt.generate_password_hash(content['password']),
         email=content['email'],
-        roles=roles
+        roles=roles,
+        image=image
     ))
 
     session.commit()

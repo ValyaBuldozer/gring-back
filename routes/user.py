@@ -3,6 +3,7 @@ from uuid import uuid4
 from flask import Blueprint, g, request, abort, jsonify, current_app
 from flask_avatars import Identicon
 from models.Entity import Entity
+from util.avatars_init import get_default_avatar
 from util.json import convert_to_json
 from flask_jwt_extended import get_jwt_identity
 from models.base import get_session
@@ -199,24 +200,14 @@ def basic_register_new_user():
 
     roles = [session.query(Role).get(RoleName.user.value)]
 
-    avatar = Identicon()
-    path = current_app.config['ASSETS_PATH']
-    filename = '%s.png' % str(uuid4())
-    size = 150
-
-    image_byte_array = avatar.get_image(
-        string=username,
-        width=int(size),
-        height=int(size),
-        pad=int(size * 0.1))
-    avatar.save(image_byte_array, save_location=os.path.join(path, filename))
+    image = get_default_avatar(username)
 
     session.add(User(
         name=content['username'],
         password=bcrypt_init.bcrypt.generate_password_hash(content['password']),
         email=content['email'],
         roles=roles,
-        image=filename
+        image=image
     ))
 
     session.commit()
@@ -323,7 +314,7 @@ def delete_image():
         path = os.path.join(current_path, assets_path, user.image)
         if os.path.isfile(path):
             os.remove(os.path.join(current_path, assets_path, user.image))
-        user.image = None
+        user.image = get_default_avatar(user.name)
     else:
         return abort(400, 'User has no picture to delete')
 
