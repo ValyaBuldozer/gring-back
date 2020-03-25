@@ -4,7 +4,7 @@ from flask import Blueprint, g, request, abort, jsonify, current_app
 from flask_avatars import Identicon
 from models.Entity import Entity
 from util.avatars_init import get_default_avatar
-from util.json import convert_to_json
+from util.json import convert_to_json, returns_json
 from flask_jwt_extended import get_jwt_identity
 from models.base import get_session
 from models.User import User
@@ -21,6 +21,7 @@ user_blueprint = Blueprint('user', __name__)
 
 @user_blueprint.route('/user', methods=['GET'])
 @roles_required([RoleName.user])
+@returns_json
 def get_current_user():
     session = get_session()
 
@@ -36,6 +37,7 @@ def get_current_user():
 
 @user_blueprint.route('/user/favorite', methods=['GET'])
 @roles_required([RoleName.user])
+@returns_json
 def get_user_favorite_by_id():
     session = get_session()
 

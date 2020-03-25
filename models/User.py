@@ -79,5 +79,6 @@ class User(db.Model):
     def to_json(self, locale):
         return {
             'id': self.id,
-            'name': self.name
+            'name': self.name,
+            'image': self.image
         }
