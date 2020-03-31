@@ -14,6 +14,7 @@ from util.current_user import get_current_user
 from models.Role import Role
 from flask_expects_json import expects_json
 from util import bcrypt_init
+from email.utils import parseaddr
 
 
 user_blueprint = Blueprint('user', __name__)
@@ -127,7 +128,7 @@ def add_new_favorite():
 
     if any(entity.id == favorite.id for entity in user.favorites):
         session.close()
-        abort(400, "Entity with id = %s already added to favorites" % favorite.id)
+        abort(409, "Entity with id = %s already added to favorites" % favorite.id)
         return
 
     user.favorites.append(favorite)
@@ -191,13 +192,18 @@ def basic_register_new_user():
     username = content['username']
     if any(user.name == username for user in users):
         session.close()
-        abort(400, "User with name = %s already exist" % username)
+        abort(409, "User with name = %s already exist" % username)
         return
 
-    usermail = content['email']
-    if any(user.email == usermail for user in users):
+    email = content['email']
+    if any(user.email == email for user in users):
         session.close()
-        abort(400, "User with email = %s already exist" % usermail)
+        abort(409, "User with email = %s already exist" % email)
+        return
+
+    if '@' not in parseaddr(email)[1]:
+        session.close()
+        abort(400, "Invalid email")
         return
 
     roles = [session.query(Role).get(RoleName.user.value)]
@@ -205,9 +211,9 @@ def basic_register_new_user():
     image = get_default_avatar(username)
 
     session.add(User(
-        name=content['username'],
+        name=username,
         password=bcrypt_init.bcrypt.generate_password_hash(content['password']),
-        email=content['email'],
+        email=email,
         roles=roles,
         image=image
     ))
@@ -239,7 +245,7 @@ def basic_update_user():
     if 'username' in content:
         if any(user.name == content['username'] for user in users):
             session.close()
-            abort(400, "User with name = %s already exist" % content['username'])
+            abort(409, "User with name = %s already exist" % content['username'])
             return
         else:
             user.name = content['username']
@@ -247,7 +253,7 @@ def basic_update_user():
     if 'email' in content:
         if any(user.email == content['email'] for user in users):
             session.close()
-            abort(400, "User with email = %s already exist" % content['email'])
+            abort(409, "User with email = %s already exist" % content['email'])
             return
         else:
             user.email = content['email']
@@ -316,7 +322,7 @@ def delete_image():
         path = os.path.join(current_path, assets_path, user.image)
         if os.path.isfile(path):
             os.remove(os.path.join(current_path, assets_path, user.image))
-        user.image = get_default_avatar(user.name)
+        user.фimage = get_default_avatar(user.name)
     else:
         return abort(400, 'User has no picture to delete')
 

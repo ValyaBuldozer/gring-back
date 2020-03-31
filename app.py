@@ -43,6 +43,7 @@ from util.osrm_client import osrm_init
 from flask_migrate import Migrate
 from util.bcrypt_init import bcrypt_init
 from util.avatars_init import avatars_init
+from werkzeug.exceptions import HTTPException
 
 
 app = Flask(__name__, instance_relative_config=True)
@@ -98,14 +99,12 @@ def serve_fe(path):
         return send_from_directory(os.path.join(path_dir), 'index.html')
 
 
-@app.errorhandler(404)
-def page_not_found(e):
-    return jsonify(error=404, text=str(e)), 404
+@app.errorhandler(Exception)
+def handle_error(e):
+    if isinstance(e, HTTPException):
+        return jsonify(error=e.description), e.code
 
-
-@app.errorhandler(400)
-def invalid_request(e):
-    return jsonify(error=400, text=str(e)), 400
+    return jsonify(error=str(e)), 500
 
 
 @jwt.token_in_blacklist_loader

@@ -27,7 +27,7 @@ auth_schema = {
 }
 
 
-@auth_blueprint.route('/token/auth', methods=['POST'])
+@auth_blueprint.route('/auth', methods=['POST'])
 @expects_json(auth_schema)
 def login():
     content = g.data
@@ -43,7 +43,7 @@ def login():
     session.close()
 
     if user is None:
-        abort(401, 'User not found')
+        abort(400, 'User not found')
         return
 
     if not user.is_active:
@@ -51,7 +51,7 @@ def login():
         return
 
     if not bcrypt_init.bcrypt.check_password_hash(user.password, password):
-        abort(401, 'Invalid password')
+        abort(400, 'Invalid password')
         return
 
     at_expires = datetime.timedelta(days=current_app.config['ACCESS_TOKEN_EXPIRES_DAYS'])
@@ -65,14 +65,14 @@ def login():
     return resp
 
 
-@auth_blueprint.route('/token/remove', methods=['POST'])
+@auth_blueprint.route('/auth', methods=['DELETE'])
 def remove_token():
     resp = jsonify({'logout': True})
     unset_jwt_cookies(resp)
     return resp, 200
 
 
-@auth_blueprint.route('/token/refresh', methods=['POST'])
+@auth_blueprint.route('/auth/refresh', methods=['POST'])
 @jwt_refresh_token_required
 def refresh_token():
     current_user_id = get_jwt_identity()
