@@ -9,7 +9,6 @@ from sqlalchemy.orm import relationship
 from models.Entity import Entity
 from models.CategoryObject import CategoryObject
 from abc import ABCMeta, abstractmethod
-from statistics import mean
 
 
 class Object(Entity):
@@ -79,6 +78,9 @@ class Object(Entity):
     @abstractmethod
     def get_name(self, locale):
         raise NotImplementedError("Must override method get_name")
+
+    def get_image(self):
+        return self.image_link
 
     def to_json(self, locale):
         return self.to_base_json(locale)

@@ -104,6 +104,7 @@ def handle_error(e):
     if isinstance(e, HTTPException):
         return jsonify(error=e.description), e.code
 
+    logging.error(e)
     return jsonify(error=str(e)), 500
 
 

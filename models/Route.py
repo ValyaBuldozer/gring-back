@@ -60,6 +60,12 @@ class Route(Entity):
         'polymorphic_identity': EntityType.route
     }
 
+    def get_name(self, locale):
+        return self.name.get(locale)
+
+    def get_image(self):
+        return None if len(self.places) < 1 else self.places[0].place.image_link
+
     def to_json(self, locale):
         return {
             **self.to_view_json(locale),
@@ -70,7 +76,6 @@ class Route(Entity):
     def to_view_json(self, locale):
         distance, duration = self.get_osrm_foot_info()
         places_count = len(self.places)
-        image = None if places_count < 1 else self.places[0].place.image_link
 
         return {
             'id': self.id,
@@ -78,7 +83,7 @@ class Route(Entity):
             'placesCount': places_count,
             'distance': distance,
             'duration': duration,
-            'image': image,
+            'image': self.get_image(),
             'rating': {
                 'average': self.avg_rating(),
                 'count': len(self.reviews)
