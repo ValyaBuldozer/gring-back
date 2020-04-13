@@ -48,3 +48,17 @@ class City(db.Model):
         collection_class=attribute_mapped_collection('locale')
     )
 
+    def to_attribute_json(self, locale):
+        return {
+            'id': self.id,
+            'name': self.name.get(locale),
+        }
+
+    def to_json(self, locale):
+        return {
+            'id': self.id,
+            'name': self.name.get(locale),
+            'description': self.description.get(locale),
+            'image_link': self.image_link,
+        }
+

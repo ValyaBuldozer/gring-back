@@ -55,15 +55,6 @@ class Object(Entity):
         cascade="all, delete-orphan",
         collection_class=attribute_mapped_collection('locale')
     )
-    city_id = db.Column(
-        db.Integer,
-        db.ForeignKey("city.city_id"),
-        name="object_city_id",
-        nullable=False
-    )
-    city = relationship(
-        "City"
-    )
     categories = relationship(
         "Category",
         secondary=CategoryObject,
@@ -90,6 +81,7 @@ class Object(Entity):
         return {
             'id': self.id,
             'name': self.get_name(locale),
+            'city': self.city.to_attribute_json(locale),
             'type': self.type.name,
             'image': self.image_link,
             'audioguide': self.audioguide_link.get(locale),

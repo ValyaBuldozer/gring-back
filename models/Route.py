@@ -80,6 +80,7 @@ class Route(Entity):
         return {
             'id': self.id,
             'name': self.name.get(locale),
+            'city': self.city.to_attribute_json(locale),
             'placesCount': places_count,
             'distance': distance,
             'duration': duration,

@@ -20,6 +20,15 @@ class Entity(db.Model):
         name="entity_type",
         nullable=False
     )
+    city_id = db.Column(
+        db.Integer,
+        db.ForeignKey("city.city_id"),
+        name="entity_city_id",
+        nullable=False
+    )
+    city = relationship(
+        "City"
+    )
     reviews = relationship(
         "Review",
         cascade="all, delete-orphan",
