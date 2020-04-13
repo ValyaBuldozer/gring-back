@@ -326,7 +326,7 @@ def delete_image():
         path = os.path.join(current_path, assets_path, user.image)
         if os.path.isfile(path):
             os.remove(os.path.join(current_path, assets_path, user.image))
-        user.фimage = get_default_avatar(user.name)
+        user.image = get_default_avatar(user.name)
     else:
         return abort(400, 'User has no picture to delete')
 
