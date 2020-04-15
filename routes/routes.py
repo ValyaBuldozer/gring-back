@@ -23,9 +23,11 @@ routes_blueprint = Blueprint('routes', __name__)
 def get_routes():
     session = get_session()
 
+    city_id = request.args.get('city')
     object_id = request.args.get('object')
 
     routes = session.query(Route).filter(
+        Route.city_id == city_id if city_id is not None else True,
         Route.places.any(RoutePlaceInfo.place_id == object_id) if object_id is not None else True
     ).all()
 
