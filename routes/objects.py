@@ -13,12 +13,14 @@ object_blueprint = Blueprint('objects', __name__)
 def get_objects():
     session = get_session()
 
+    city_id = request.args.get('city')
     object_type = request.args.get('type')
     category = request.args.get('category')
 
     objects = session.query(Object).filter(
-        Object.type == object_type if 'type' in request.args else True,
-        Object.categories.any(Category.alias == category) if 'category' in request.args else True
+        Object.city_id == city_id if city_id is not None else True,
+        Object.type == object_type if object_type is not None else True,
+        Object.categories.any(Category.alias == category) if category is not None else True
     ).all()
 
     locale = validate_locate(request.headers.get('locale'))
