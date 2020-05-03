@@ -3,7 +3,8 @@ from uuid import uuid4
 from flask import Blueprint, request, abort, g
 
 from models.LocaleString import LocaleString
-from util.json import returns_json, convert_to_json, validate_locate
+from util.get_locale import get_locale
+from util.json import returns_json, convert_to_json, validate_locale
 from models.HistoricalPerson import HistoricalPerson
 from models.City import City
 from models.Object import Object
@@ -24,7 +25,7 @@ def get_historical_persons():
 
     historical_persons = session.query(HistoricalPerson).all()
 
-    locale = validate_locate(request.headers.get('locale'))
+    locale = get_locale()
     json_historical_persons = convert_to_json(historical_persons, locale)
 
     session.close()
@@ -43,7 +44,7 @@ def get_historical_person_by_id(object_id):
         session.close()
         abort(404, "Historical person with id = %s not found" % object_id)
 
-    locale = validate_locate(request.headers.get('locale'))
+    locale = get_locale()
     json_historical_person = convert_to_json(historical_person, locale)
 
     session.close()
@@ -129,7 +130,7 @@ def put_new_hisrorical_person():
         related_objects=related_objects,
     )
 
-    locale = validate_locate(request.headers.get('locale'))
+    locale = validate_locale(request.headers.get('locale'))
 
     name_id = str(uuid4())
     locale_string = LocaleString(
@@ -208,7 +209,7 @@ def post_hisrorical_person_by_id(object_id):
     historical_person.birthdate = content['birthdate']
     historical_person.deathdate = content['deathdate']
 
-    locale = validate_locate(request.headers.get('locale'))
+    locale = validate_locale(request.headers.get('locale'))
 
     historical_person.name.set(LocaleString(
         id=historical_person.name_id,

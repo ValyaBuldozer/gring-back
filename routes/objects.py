@@ -1,8 +1,9 @@
 from models.Object import Object
 from models.Category import Category
 from flask import Blueprint, request, abort
-from util.json import convert_to_json, returns_json, validate_locate
+from util.json import convert_to_json, returns_json, validate_locale
 from models.base import get_session
+from util.get_locale import get_locale
 
 
 object_blueprint = Blueprint('objects', __name__)
@@ -23,7 +24,7 @@ def get_objects():
         Object.categories.any(Category.alias == category) if category is not None else True
     ).all()
 
-    locale = validate_locate(request.headers.get('locale'))
+    locale = get_locale()
     mapped_objects = list(map(lambda o: o.to_base_json(locale), objects))
 
     json_objects = convert_to_json(mapped_objects, locale)
@@ -44,7 +45,7 @@ def get_object_by_id(object_id):
         session.close()
         abort(404, "Object with id = %s not found" % object_id)
 
-    locale = validate_locate(request.headers.get('locale'))
+    locale = get_locale()
     json_object = convert_to_json(obj, locale)
 
     session.close()

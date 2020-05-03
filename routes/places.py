@@ -3,7 +3,8 @@ from uuid import uuid4
 from flask import Blueprint, request, abort, g
 
 from models.LocaleString import LocaleString
-from util.json import returns_json, convert_to_json, validate_locate
+from util.get_locale import get_locale
+from util.json import returns_json, convert_to_json, validate_locale
 from models.Place import Place
 from models.City import City
 from models.Geolocation import Geolocation
@@ -26,7 +27,7 @@ def get_places():
 
     places = session.query(Place).all()
 
-    locale = validate_locate(request.headers.get('locale'))
+    locale = get_locale()
     json_places = convert_to_json(places, locale)
 
     session.close()
@@ -45,7 +46,7 @@ def get_place_by_id(object_id):
         session.close()
         abort(404, "Place with id = %s not found" % object_id)
 
-    locale = validate_locate(request.headers.get('locale'))
+    locale = get_locale()
     json_place = convert_to_json(place, locale)
 
     session.close()
@@ -111,7 +112,7 @@ def put_new_place():
         categories=categories
     )
 
-    locale = validate_locate(request.headers.get('locale'))
+    locale = validate_locale(request.headers.get('locale'))
 
     name_id = str(uuid4())
     locale_string = LocaleString(
@@ -182,7 +183,7 @@ def post_place_by_id(object_id):
     geolocation.latitude = content['latitude']
     geolocation.longitude = content['longitude']
 
-    locale = validate_locate(request.headers.get('locale'))
+    locale = validate_locale(request.headers.get('locale'))
 
     place.name.set(LocaleString(
         id=place.name_id,

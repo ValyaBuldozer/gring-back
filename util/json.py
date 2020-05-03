@@ -4,7 +4,7 @@ from functools import wraps
 from models.Language import Language
 
 
-def validate_locate(locale):
+def validate_locale(locale):
     if locale is None or locale not in Language.__members__:
         return Language.ru
 

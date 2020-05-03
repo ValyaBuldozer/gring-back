@@ -4,7 +4,8 @@ from flask import Blueprint, request, abort, g
 
 from models.Language import Language
 from models.LocaleString import LocaleString
-from util.json import convert_to_json, returns_json, validate_locate
+from util.get_locale import get_locale
+from util.json import convert_to_json, returns_json, validate_locale
 from models.Route import Route
 from models.RoutePlaceInfo import RoutePlaceInfo
 from models.Object import Object
@@ -31,10 +32,10 @@ def get_routes():
         Route.places.any(RoutePlaceInfo.place_id == object_id) if object_id is not None else True
     ).all()
 
-    locale = validate_locate(request.headers.get('locale'))
-    mapped_objects = list(map(lambda r: r.to_view_json(locale), routes))
+    locale = get_locale()
+    mapped_routes = list(map(lambda r: r.to_view_json(locale), routes))
 
-    json_routes = convert_to_json(mapped_objects, locale)
+    json_routes = convert_to_json(mapped_routes, locale)
 
     session.close()
 
@@ -52,7 +53,7 @@ def get_route_by_id(route_id):
         session.close()
         abort(404, "Route with id = %s not found" % route_id)
 
-    locale = validate_locate(request.headers.get('locale'))
+    locale = get_locale()
     json_route = convert_to_json(route, locale)
 
     session.close()
@@ -108,7 +109,7 @@ def put_new_route():
         places=places
     )
 
-    locale = validate_locate(request.headers.get('locale'))
+    locale = validate_locale(request.headers.get('locale'))
 
     name_id = str(uuid4())
     locale_string = LocaleString(
@@ -167,7 +168,7 @@ def post_route_by_id(route_id):
 
     route.places = places
 
-    locale = validate_locate(request.headers.get('locale'))
+    locale = validate_locale(request.headers.get('locale'))
 
     route.name.set(LocaleString(
         id=route.name_id,

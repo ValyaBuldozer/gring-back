@@ -5,7 +5,8 @@ from flask import Blueprint, request, abort, g
 from models.LocaleString import LocaleString
 from models.RoleName import RoleName
 from util.decorators import roles_required
-from util.json import convert_to_json, returns_json, validate_locate
+from util.get_locale import get_locale
+from util.json import convert_to_json, returns_json, validate_locale
 from models.base import get_session
 from sqlalchemy import desc
 from sqlalchemy import func
@@ -26,7 +27,7 @@ def get_categories():
         .order_by(desc(func.count(CategoryObject.c.object_id)))\
         .all()
 
-    locale = validate_locate(request.headers.get('locale'))
+    locale = get_locale()
     json_categories = convert_to_json(categories, locale)
 
     session.close()
@@ -45,7 +46,7 @@ def get_category_by_id(category_id):
         session.close()
         abort(404, "Category with id = %s not found" % category_id)
 
-    locale = validate_locate(request.headers.get('locale'))
+    locale = get_locale()
     json_category = convert_to_json(cat, locale)
 
     session.close()
@@ -68,7 +69,7 @@ def put_new_category():
     session = get_session()
     content = g.data
 
-    locale = validate_locate(request.headers.get('locale'))
+    locale = validate_locale(request.headers.get('locale'))
 
     category = Category()
     name_id = str(uuid4())
@@ -100,7 +101,7 @@ def post_category_by_id(category_id):
         return
 
     content = g.data
-    locale = validate_locate(request.headers.get('locale'))
+    locale = validate_locale(request.headers.get('locale'))
 
     category.name.set(LocaleString(
         id=category.name_id,

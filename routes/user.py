@@ -15,7 +15,7 @@ from models.Role import Role
 from flask_expects_json import expects_json
 from util import bcrypt_init
 from email.utils import parseaddr
-from util.json import validate_locate
+from util.json import validate_locale
 
 
 user_blueprint = Blueprint('user', __name__)
@@ -45,7 +45,7 @@ def get_user_favorite_by_id():
 
     current_user_id = get_jwt_identity()
     user = session.query(User).get(current_user_id)
-    locale = validate_locate(request.headers.get('locale'))
+    locale = validate_locale(request.headers.get('locale'))
 
     json_favorites = convert_to_json(
         list(map(lambda entity: entity.to_entity_json(locale), user.favorites))
