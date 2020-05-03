@@ -28,10 +28,19 @@ class PublicPlace(Place):
         name="public_place_site",
         nullable=True
     )
-    avg_check = db.Column(
+    avg_check_id = db.Column(
         db.String(50),
-        name="public_place_avg_check",
+        db.ForeignKey("locale_string.string_id"),
+        name="public_place_avg_check_id",
         nullable=True
+    )
+    avg_check = relationship(
+        LocaleString,
+        foreign_keys=[avg_check_id],
+        uselist=True,
+        single_parent=True,
+        cascade="all, delete-orphan",
+        collection_class=attribute_mapped_collection('locale')
     )
     food_id = db.Column(
         db.String(50),
@@ -64,6 +73,10 @@ class PublicPlace(Place):
         object_json = super().to_json(locale)
         place_json = {
             'address': self.address.get(locale),
+            'phone': self.phone,
+            'site': self.site,
+            'avg_check': self.avg_check.get(locale),
+            'food': self.food.get(locale),
             'geolocation': self.geolocation,
             'timetable': self.timetable
         }
