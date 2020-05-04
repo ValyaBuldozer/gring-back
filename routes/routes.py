@@ -4,7 +4,7 @@ from flask import Blueprint, request, abort, g
 
 from models.Language import Language
 from models.LocaleString import LocaleString
-from util.get_locale import get_locale
+from util.get_locale import get_locale, get_post_locale
 from util.json import convert_to_json, returns_json, validate_locale
 from models.Route import Route
 from models.RoutePlaceInfo import RoutePlaceInfo
@@ -90,6 +90,8 @@ def put_new_route():
     content = g.data
     session = get_session()
 
+    locale = get_post_locale(session)
+
     places = []
 
     for index, place_info in enumerate(content['places']):
@@ -108,8 +110,6 @@ def put_new_route():
     route = Route(
         places=places
     )
-
-    locale = validate_locale(request.headers.get('locale'))
 
     name_id = str(uuid4())
     locale_string = LocaleString(
@@ -144,6 +144,8 @@ def post_route_by_id(route_id):
     session = get_session()
     route = session.query(Route).get(route_id)
 
+    locale = get_post_locale(session)
+
     if route is None:
         session.close()
         abort(404, "Route with id = %s not found" % route_id)
@@ -167,8 +169,6 @@ def post_route_by_id(route_id):
         ))
 
     route.places = places
-
-    locale = validate_locale(request.headers.get('locale'))
 
     route.name.set(LocaleString(
         id=route.name_id,

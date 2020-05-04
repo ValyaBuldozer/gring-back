@@ -42,6 +42,20 @@ class PublicPlace(Place):
         cascade="all, delete-orphan",
         collection_class=attribute_mapped_collection('locale')
     )
+    visiting_cost_id = db.Column(
+        db.String(50),
+        db.ForeignKey("locale_string.string_id"),
+        name="public_place_visiting_cost_id",
+        nullable=True
+    )
+    visiting_cost = relationship(
+        LocaleString,
+        foreign_keys=[visiting_cost_id],
+        uselist=True,
+        single_parent=True,
+        cascade="all, delete-orphan",
+        collection_class=attribute_mapped_collection('locale')
+    )
     food_id = db.Column(
         db.String(50),
         db.ForeignKey("locale_string.string_id"),

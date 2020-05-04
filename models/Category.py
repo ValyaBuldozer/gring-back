@@ -13,9 +13,9 @@ class Category(db.Model):
         name="category_id",
         nullable=False
     )
-    alias = db.Column(
+    label = db.Column(
         db.String(30),
-        name="category_alias",
+        name="category_label",
         nullable=False
     )
     name_id = db.Column(

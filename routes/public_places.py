@@ -3,7 +3,7 @@ from uuid import uuid4
 from flask import Blueprint, request, abort, g
 
 from models.LocaleString import LocaleString
-from util.get_locale import get_locale
+from util.get_locale import get_locale, get_post_locale
 from util.json import returns_json, convert_to_json, validate_locale
 from models.PublicPlace import PublicPlace
 from models.City import City
@@ -87,7 +87,12 @@ put_public_place_schema = {
                 }
             },
             'required': ['day', 'open_time', 'close_time']
-        }
+        },
+        'phone': {'type': 'string'},
+        'site': {'type': 'string'},
+        'avg_check': {'type': 'string'},
+        'visiting_cost': {'type': 'string'},
+        'food': {'type': 'string'},
     },
     'required': ['image_link', 'description', 'city_id', 'name', 'address', 'latitude',
                  'longitude', 'categories', 'timetable']
@@ -100,6 +105,8 @@ put_public_place_schema = {
 def put_new_public_place():
     session = get_session()
     content = g.data
+
+    locale = get_post_locale(session)
 
     if session.query(City).get(content['city_id']) is None:
         session.close()
@@ -135,12 +142,12 @@ def put_new_public_place():
     public_place = PublicPlace(
         image_link=content['image_link'],
         city_id=content['city_id'],
+        phone=content['phone'],
+        site=content['site'],
         geolocation=geolocation,
         categories=categories,
         timetable=timetable
     )
-
-    locale = validate_locale(request.headers.get('locale'))
 
     name_id = str(uuid4())
     locale_string = LocaleString(
@@ -178,6 +185,33 @@ def put_new_public_place():
     public_place.audioguide_link_id = audioguide_link_id
     public_place.audioguide_link.set(locale_string)
 
+    avg_check_id = str(uuid4())
+    locale_string = LocaleString(
+        id=avg_check_id,
+        locale=locale,
+        text=content['avg_check']
+    )
+    public_place.avg_check_id = avg_check_id
+    public_place.avg_check.set(locale_string)
+
+    visiting_cost_id = str(uuid4())
+    locale_string = LocaleString(
+        id=visiting_cost_id,
+        locale=locale,
+        text=content['visiting_cost']
+    )
+    public_place.visiting_cost_id = visiting_cost_id
+    public_place.visiting_cost.set(locale_string)
+
+    food_id = str(uuid4())
+    locale_string = LocaleString(
+        id=food_id,
+        locale=locale,
+        text=content['food']
+    )
+    public_place.food_id = food_id
+    public_place.food.set(locale_string)
+
     session.add(public_place)
 
     session.commit()
@@ -193,6 +227,8 @@ def post_public_place_by_id(object_id):
     session = get_session()
     public_place = session.query(PublicPlace).get(object_id)
 
+    locale = get_post_locale(session)
+
     if public_place is None:
         session.close()
         abort(404, "Public place with id = %s not found" % object_id)
@@ -207,11 +243,11 @@ def post_public_place_by_id(object_id):
 
     public_place.image_link = content['image_link']
     public_place.city_id = content['city_id']
+    public_place.phone = content['phone'],
+    public_place.site = content['site'],
     geolocation = session.query(Geolocation).get(public_place.geolocation_id)
     geolocation.latitude = content['latitude']
     geolocation.longitude = content['longitude']
-
-    locale = validate_locale(request.headers.get('locale'))
 
     public_place.name.set(LocaleString(
         id=public_place.name_id,
@@ -235,6 +271,24 @@ def post_public_place_by_id(object_id):
         id=public_place.audioguide_link_id,
         locale=locale,
         text=content['audioguide_link']
+    ))
+
+    public_place.avg_check.set(LocaleString(
+        id=public_place.avg_check_id,
+        locale=locale,
+        text=content['avg_check']
+    ))
+
+    public_place.visiting_cost.set(LocaleString(
+        id=public_place.visiting_cost_id,
+        locale=locale,
+        text=content['visiting_cost']
+    ))
+
+    public_place.food.set(LocaleString(
+        id=public_place.food_id,
+        locale=locale,
+        text=content['food']
     ))
 
     categories = []

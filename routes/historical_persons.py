@@ -3,7 +3,7 @@ from uuid import uuid4
 from flask import Blueprint, request, abort, g
 
 from models.LocaleString import LocaleString
-from util.get_locale import get_locale
+from util.get_locale import get_locale, get_post_locale
 from util.json import returns_json, convert_to_json, validate_locale
 from models.HistoricalPerson import HistoricalPerson
 from models.City import City
@@ -92,6 +92,8 @@ def put_new_hisrorical_person():
     content = g.data
     session = get_session()
 
+    locale = get_post_locale(session)
+
     if session.query(City).get(content['city_id']) is None:
         session.close()
         abort(400, "City with id = %s not found" % content['city_id'])
@@ -129,8 +131,6 @@ def put_new_hisrorical_person():
         categories=categories,
         related_objects=related_objects,
     )
-
-    locale = validate_locale(request.headers.get('locale'))
 
     name_id = str(uuid4())
     locale_string = LocaleString(
@@ -192,6 +192,8 @@ def post_hisrorical_person_by_id(object_id):
     session = get_session()
     content = g.data
 
+    locale = get_post_locale(session)
+
     historical_person = session.query(HistoricalPerson).get(object_id)
     if historical_person is None:
         session.close()
@@ -208,8 +210,6 @@ def post_hisrorical_person_by_id(object_id):
     historical_person.city_id = content['city_id']
     historical_person.birthdate = content['birthdate']
     historical_person.deathdate = content['deathdate']
-
-    locale = validate_locale(request.headers.get('locale'))
 
     historical_person.name.set(LocaleString(
         id=historical_person.name_id,

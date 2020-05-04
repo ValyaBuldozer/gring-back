@@ -2,10 +2,12 @@ from flask_expects_json import expects_json
 from models.Category import Category
 from models.CategoryObject import CategoryObject
 from flask import Blueprint, request, abort, g
+
+from models.Language import Language
 from models.LocaleString import LocaleString
 from models.RoleName import RoleName
 from util.decorators import roles_required
-from util.get_locale import get_locale
+from util.get_locale import get_locale, get_post_locale
 from util.json import convert_to_json, returns_json, validate_locale
 from models.base import get_session
 from sqlalchemy import desc
@@ -58,6 +60,7 @@ put_category_schema = {
     'type': 'object',
     'properties': {
         'name': {'type': 'string'},
+        'label': {'type': 'string'}
     },
     'required': ['name']
 }
@@ -69,7 +72,7 @@ def put_new_category():
     session = get_session()
     content = g.data
 
-    locale = validate_locale(request.headers.get('locale'))
+    locale = get_post_locale(session)
 
     category = Category()
     name_id = str(uuid4())
@@ -80,6 +83,7 @@ def put_new_category():
     )
     category.name_id = name_id
     category.name.set(locale_string)
+    category.label = content['label']
 
     session.add(category)
 
@@ -95,19 +99,22 @@ def post_category_by_id(category_id):
     session = get_session()
     category = session.query(Category).get(category_id)
 
+    locale = get_post_locale(session)
+
     if category is None:
         session.close()
         abort(404, "Category with id = %s not found" % category_id)
         return
 
     content = g.data
-    locale = validate_locale(request.headers.get('locale'))
 
     category.name.set(LocaleString(
         id=category.name_id,
         locale=locale,
         text=content['name']
     ))
+
+    category.label = content['label']
 
     session.commit()
     session.close()

@@ -3,7 +3,7 @@ from uuid import uuid4
 from flask import Blueprint, request, abort, g
 
 from models.LocaleString import LocaleString
-from util.get_locale import get_locale
+from util.get_locale import get_locale, get_post_locale
 from util.json import returns_json, convert_to_json, validate_locale
 from models.Place import Place
 from models.City import City
@@ -83,6 +83,8 @@ def put_new_place():
     session = get_session()
     content = g.data
 
+    locale = get_post_locale(session)
+
     if session.query(City).get(content['city_id']) is None:
         session.close()
         abort(400, "City with id = %s not found" % content['city_id'])
@@ -111,8 +113,6 @@ def put_new_place():
         geolocation=geolocation,
         categories=categories
     )
-
-    locale = validate_locale(request.headers.get('locale'))
 
     name_id = str(uuid4())
     locale_string = LocaleString(
@@ -165,6 +165,8 @@ def post_place_by_id(object_id):
     session = get_session()
     place = session.query(Place).get(object_id)
 
+    locale = get_post_locale(session)
+
     if place is None:
         session.close()
         abort(404, "Place with id = %s not found" % object_id)
@@ -182,8 +184,6 @@ def post_place_by_id(object_id):
     geolocation = session.query(Geolocation).get(place.geolocation_id)
     geolocation.latitude = content['latitude']
     geolocation.longitude = content['longitude']
-
-    locale = validate_locale(request.headers.get('locale'))
 
     place.name.set(LocaleString(
         id=place.name_id,
