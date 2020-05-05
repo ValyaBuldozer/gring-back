@@ -3,8 +3,8 @@ from uuid import uuid4
 from flask import Blueprint, request, abort, g
 
 from models.LocaleString import LocaleString
-from util.get_locale import get_locale, get_post_locale
-from util.json import returns_json, convert_to_json, validate_locale
+from util.get_locale import validate_locale, get_locale, get_post_locale
+from util.json import returns_json, convert_to_json
 from models.Place import Place
 from models.City import City
 from models.Geolocation import Geolocation

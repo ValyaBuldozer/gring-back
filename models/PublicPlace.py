@@ -18,9 +18,9 @@ class PublicPlace(Place):
         name="object_id",
         nullable=False
     )
-    phone = db.Column(
+    phone_number = db.Column(
         db.String(15),
-        name="public_place_phone",
+        name="public_place_phone_number",
         nullable=True
     )
     site = db.Column(
@@ -28,43 +28,29 @@ class PublicPlace(Place):
         name="public_place_site",
         nullable=True
     )
-    avg_check_id = db.Column(
+    avg_bill_id = db.Column(
         db.String(50),
         db.ForeignKey("locale_string.string_id"),
-        name="public_place_avg_check_id",
+        name="public_place_avg_bill_id",
         nullable=True
     )
-    avg_check = relationship(
+    avg_bill = relationship(
         LocaleString,
-        foreign_keys=[avg_check_id],
+        foreign_keys=[avg_bill_id],
         uselist=True,
         single_parent=True,
         cascade="all, delete-orphan",
         collection_class=attribute_mapped_collection('locale')
     )
-    visiting_cost_id = db.Column(
+    visit_cost_id = db.Column(
         db.String(50),
         db.ForeignKey("locale_string.string_id"),
-        name="public_place_visiting_cost_id",
+        name="public_place_visit_cost_id",
         nullable=True
     )
-    visiting_cost = relationship(
+    visit_cost = relationship(
         LocaleString,
-        foreign_keys=[visiting_cost_id],
-        uselist=True,
-        single_parent=True,
-        cascade="all, delete-orphan",
-        collection_class=attribute_mapped_collection('locale')
-    )
-    food_id = db.Column(
-        db.String(50),
-        db.ForeignKey("locale_string.string_id"),
-        name="public_place_food_id",
-        nullable=True
-    )
-    food = relationship(
-        LocaleString,
-        foreign_keys=[food_id],
+        foreign_keys=[visit_cost_id],
         uselist=True,
         single_parent=True,
         cascade="all, delete-orphan",
@@ -87,10 +73,9 @@ class PublicPlace(Place):
         object_json = super().to_json(locale)
         place_json = {
             'address': self.address.get(locale),
-            'phone': self.phone,
+            'phone_number': self.phone_number,
             'site': self.site,
-            'avg_check': self.avg_check.get(locale),
-            'food': self.food.get(locale),
+            'avg_bill': self.avg_bill.get(locale),
             'geolocation': self.geolocation,
             'timetable': self.timetable
         }

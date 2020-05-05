@@ -1,6 +1,12 @@
 from flask import request, abort
 from models.Language import Language
-from util.json import validate_locale
+
+
+def validate_locale(locale):
+    if locale is None or locale not in Language.__members__:
+        return Language.ru
+
+    return Language[locale]
 
 
 def get_locale():

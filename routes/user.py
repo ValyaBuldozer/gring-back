@@ -4,6 +4,7 @@ from flask import Blueprint, g, request, abort, jsonify, current_app
 from flask_avatars import Identicon
 from models.Entity import Entity
 from util.avatars_init import get_default_avatar
+from util.get_locale import validate_locale, get_locale
 from util.json import convert_to_json, returns_json
 from flask_jwt_extended import get_jwt_identity
 from models.base import get_session
@@ -15,7 +16,6 @@ from models.Role import Role
 from flask_expects_json import expects_json
 from util import bcrypt_init
 from email.utils import parseaddr
-from util.json import validate_locale
 
 
 user_blueprint = Blueprint('user', __name__)
@@ -45,7 +45,7 @@ def get_user_favorite_by_id():
 
     current_user_id = get_jwt_identity()
     user = session.query(User).get(current_user_id)
-    locale = validate_locale(request.headers.get('locale'))
+    locale = get_locale()
 
     json_favorites = convert_to_json(
         list(map(lambda entity: entity.to_entity_json(locale), user.favorites))

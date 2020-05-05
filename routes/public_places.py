@@ -3,8 +3,8 @@ from uuid import uuid4
 from flask import Blueprint, request, abort, g
 
 from models.LocaleString import LocaleString
-from util.get_locale import get_locale, get_post_locale
-from util.json import returns_json, convert_to_json, validate_locale
+from util.get_locale import validate_locale, get_locale, get_post_locale
+from util.json import returns_json, convert_to_json
 from models.PublicPlace import PublicPlace
 from models.City import City
 from models.Geolocation import Geolocation
@@ -88,11 +88,10 @@ put_public_place_schema = {
             },
             'required': ['day', 'open_time', 'close_time']
         },
-        'phone': {'type': 'string'},
+        'phone_number': {'type': 'string'},
         'site': {'type': 'string'},
-        'avg_check': {'type': 'string'},
-        'visiting_cost': {'type': 'string'},
-        'food': {'type': 'string'},
+        'avg_bill': {'type': 'string'},
+        'visit_cost': {'type': 'string'}
     },
     'required': ['image_link', 'description', 'city_id', 'name', 'address', 'latitude',
                  'longitude', 'categories', 'timetable']
@@ -142,7 +141,7 @@ def put_new_public_place():
     public_place = PublicPlace(
         image_link=content['image_link'],
         city_id=content['city_id'],
-        phone=content['phone'],
+        phone_number=content['phone_number'],
         site=content['site'],
         geolocation=geolocation,
         categories=categories,
@@ -185,32 +184,23 @@ def put_new_public_place():
     public_place.audioguide_link_id = audioguide_link_id
     public_place.audioguide_link.set(locale_string)
 
-    avg_check_id = str(uuid4())
+    avg_bill_id = str(uuid4())
     locale_string = LocaleString(
-        id=avg_check_id,
+        id=avg_bill_id,
         locale=locale,
-        text=content['avg_check']
+        text=content['avg_bill']
     )
-    public_place.avg_check_id = avg_check_id
-    public_place.avg_check.set(locale_string)
+    public_place.avg_bill_id = avg_bill_id
+    public_place.avg_bill.set(locale_string)
 
-    visiting_cost_id = str(uuid4())
+    visit_cost_id = str(uuid4())
     locale_string = LocaleString(
-        id=visiting_cost_id,
+        id=visit_cost_id,
         locale=locale,
-        text=content['visiting_cost']
+        text=content['visit_cost']
     )
-    public_place.visiting_cost_id = visiting_cost_id
-    public_place.visiting_cost.set(locale_string)
-
-    food_id = str(uuid4())
-    locale_string = LocaleString(
-        id=food_id,
-        locale=locale,
-        text=content['food']
-    )
-    public_place.food_id = food_id
-    public_place.food.set(locale_string)
+    public_place.visit_cost_id = visit_cost_id
+    public_place.visit_cost.set(locale_string)
 
     session.add(public_place)
 
@@ -243,7 +233,7 @@ def post_public_place_by_id(object_id):
 
     public_place.image_link = content['image_link']
     public_place.city_id = content['city_id']
-    public_place.phone = content['phone'],
+    public_place.phone_number = content['phone_number'],
     public_place.site = content['site'],
     geolocation = session.query(Geolocation).get(public_place.geolocation_id)
     geolocation.latitude = content['latitude']
@@ -273,22 +263,16 @@ def post_public_place_by_id(object_id):
         text=content['audioguide_link']
     ))
 
-    public_place.avg_check.set(LocaleString(
-        id=public_place.avg_check_id,
+    public_place.avg_bill.set(LocaleString(
+        id=public_place.avg_bill_id,
         locale=locale,
-        text=content['avg_check']
+        text=content['avg_bill']
     ))
 
-    public_place.visiting_cost.set(LocaleString(
-        id=public_place.visiting_cost_id,
+    public_place.visit_cost.set(LocaleString(
+        id=public_place.visit_cost_id,
         locale=locale,
-        text=content['visiting_cost']
-    ))
-
-    public_place.food.set(LocaleString(
-        id=public_place.food_id,
-        locale=locale,
-        text=content['food']
+        text=content['visit_cost']
     ))
 
     categories = []

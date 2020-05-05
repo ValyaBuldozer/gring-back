@@ -4,13 +4,6 @@ from functools import wraps
 from models.Language import Language
 
 
-def validate_locale(locale):
-    if locale is None or locale not in Language.__members__:
-        return Language.ru
-
-    return Language[locale]
-
-
 def convert_to_json(obj, locale=Language.ru):
     return json.dumps(
         obj,

@@ -4,8 +4,8 @@ from flask import Blueprint, request, abort, g
 
 from models.Language import Language
 from models.LocaleString import LocaleString
-from util.get_locale import get_locale, get_post_locale
-from util.json import convert_to_json, returns_json, validate_locale
+from util.get_locale import validate_locale, get_locale, get_post_locale
+from util.json import convert_to_json, returns_json
 from models.Route import Route
 from models.RoutePlaceInfo import RoutePlaceInfo
 from models.Object import Object

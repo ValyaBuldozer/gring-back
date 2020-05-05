@@ -1,9 +1,9 @@
 from models.Object import Object
 from models.Category import Category
 from flask import Blueprint, request, abort
-from util.json import convert_to_json, returns_json, validate_locale
+from util.json import convert_to_json, returns_json
 from models.base import get_session
-from util.get_locale import get_locale
+from util.get_locale import validate_locale, get_locale
 
 
 object_blueprint = Blueprint('objects', __name__)

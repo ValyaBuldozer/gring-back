@@ -7,8 +7,8 @@ from models.Language import Language
 from models.LocaleString import LocaleString
 from models.RoleName import RoleName
 from util.decorators import roles_required
-from util.get_locale import get_locale, get_post_locale
-from util.json import convert_to_json, returns_json, validate_locale
+from util.get_locale import validate_locale, get_locale, get_post_locale
+from util.json import convert_to_json, returns_json
 from models.base import get_session
 from sqlalchemy import desc
 from sqlalchemy import func
