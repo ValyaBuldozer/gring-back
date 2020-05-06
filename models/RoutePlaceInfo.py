@@ -64,11 +64,9 @@ class RoutePlaceInfo(db.Model):
 
     def to_json(self, locale):
         object_dict = self.place.to_object_json(locale)
-        description = self.description.get(locale)
-        audioguide = self.audioguide_link.get(locale)
 
         return {
             **object_dict,
-            "description": object_dict["description"] if description is None else description,
-            "audioguide": object_dict["audioguide"] if audioguide is None else audioguide
+            "description":  self.description.get(locale) or self.place.description.get(locale),
+            "audioguide": self.audioguide_link.get(locale) or self.place.audioguide_link.get(locale)
         }

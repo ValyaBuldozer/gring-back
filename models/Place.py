@@ -76,6 +76,7 @@ class Place(Object):
         place_json = {
             'address': self.address.get(locale),
             'geolocation': self.geolocation,
+            'description': self.description.get(locale),
             'routes': list(
                 map(lambda r: r.route_id, self.routes)),
         }

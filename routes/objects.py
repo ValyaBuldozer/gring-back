@@ -25,7 +25,7 @@ def get_objects():
     ).all()
 
     locale = get_locale()
-    mapped_objects = list(map(lambda o: o.to_base_json(locale), objects))
+    mapped_objects = list(map(lambda o: o.to_object_json(locale), objects))
 
     json_objects = convert_to_json(mapped_objects, locale)
 
