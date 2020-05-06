@@ -63,7 +63,7 @@ class RoutePlaceInfo(db.Model):
     )
 
     def to_json(self, locale):
-        object_dict = self.place.to_base_json(locale)
+        object_dict = self.place.to_object_json(locale)
         description = self.description.get(locale)
         audioguide = self.audioguide_link.get(locale)
 

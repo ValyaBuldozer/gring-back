@@ -56,6 +56,9 @@ class Entity(db.Model):
             'image': self.get_image()
         }
 
+    def to_json(self, locale):
+        return self.to_entity_json(locale)
+
     def avg_rating(self):
         if len(self.reviews) < 1:
             return 0

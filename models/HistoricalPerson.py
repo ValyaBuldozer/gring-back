@@ -104,7 +104,7 @@ class HistoricalPerson(Object):
             'patronymic': patronymic,
             'birthdate': str(self.birthdate),
             'deathdate': str(self.deathdate) if self.deathdate is not None else None,
-            'relatedObjects': list(map(lambda o: o.to_base_json(locale), self.related_objects))
+            'relatedObjects': list(map(lambda o: o.to_object_json(locale), self.related_objects))
         }
 
         return {

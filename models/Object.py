@@ -74,10 +74,10 @@ class Object(Entity):
         return self.image_link
 
     def to_json(self, locale):
-        return self.to_base_json(locale)
+        return self.to_object_json(locale)
 
     # we need it because some times we need not to call child's to_json() func
-    def to_base_json(self, locale):
+    def to_object_json(self, locale):
         return {
             'id': self.id,
             'name': self.get_name(locale),
@@ -86,7 +86,6 @@ class Object(Entity):
             'image': self.image_link,
             'audioguide': self.audioguide_link.get(locale),
             'categories': self.categories,
-            'description': self.description.get(locale),
             'rating': {
                 'average': self.avg_rating(),
                 'count': len(self.reviews)
