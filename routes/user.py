@@ -3,6 +3,7 @@ from uuid import uuid4
 from flask import Blueprint, g, request, abort, jsonify, current_app
 from flask_avatars import Identicon
 from models.Entity import Entity
+from models.Place import Place
 from util.avatars_init import get_default_avatar
 from util.get_locale import validate_locale, get_locale
 from util.json import convert_to_json, returns_json
@@ -17,6 +18,7 @@ from flask_expects_json import expects_json
 from util import bcrypt_init
 from email.utils import parseaddr
 
+from util.upload_image import upload_image
 
 user_blueprint = Blueprint('user', __name__)
 
@@ -54,6 +56,25 @@ def get_user_favorite_by_id():
     session.close()
 
     return json_favorites
+
+
+@user_blueprint.route('/user/visited', methods=['GET'])
+@roles_required([RoleName.user])
+@returns_json
+def get_user_visited_by_id():
+    session = get_session()
+
+    current_user_id = get_jwt_identity()
+    user = session.query(User).get(current_user_id)
+    locale = get_locale()
+
+    json_visited_places = convert_to_json(
+        list(map(lambda entity: entity.to_entity_json(locale), user.visited_places))
+     )
+
+    session.close()
+
+    return json_visited_places
 
 
 @user_blueprint.route('/user/block/<user_id>', methods=['POST'])
@@ -158,6 +179,68 @@ def delete_favorite(entity_id):
     user = session.query(User).get(current_user_id)
 
     user.favorites.remove(favorite)
+
+    session.commit()
+    session.close()
+
+    return 'ok'
+
+
+put_visited_place_schema = {
+    'type': 'object',
+    'properties': {
+        'place_id': {'type': 'integer'},
+    },
+    'required': ['place_id']
+}
+
+
+@user_blueprint.route('/user/visited', methods=['POST'])
+@expects_json(put_visited_place_schema)
+@roles_required([RoleName.user])
+def add_new_visited_place():
+    content = g.data
+    session = get_session()
+
+    place_id = content['place_id']
+    visited_place = session.query(Place).get(place_id)
+
+    if visited_place is None:
+        session.close()
+        abort(400, "Place with id = %s not found" % place_id)
+        return
+
+    current_user_id = get_jwt_identity()
+    user = session.query(User).get(current_user_id)
+
+    if any(entity.id == visited_place.id for entity in user.visited_places):
+        session.close()
+        abort(409, "Place with id = %s already added to visited places" % visited_place.id)
+        return
+
+    user.visited_places.append(visited_place)
+
+    session.commit()
+    session.close()
+
+    return 'ok'
+
+
+@user_blueprint.route('/user/visited/<place_id>', methods=['DELETE'])
+@roles_required([RoleName.user])
+def delete_visited_place(place_id):
+    session = get_session()
+    visited_place = session.query(Place).get(place_id)
+
+    if visited_place is None:
+        session.close()
+        abort(404, "Place with id = %s not found" % place_id)
+        return
+
+    current_user_id = get_jwt_identity()
+    user = session.query(User).get(current_user_id)
+
+    user.visited_places.remove(visited_place)
 
     session.commit()
     session.close()
@@ -273,47 +356,25 @@ def basic_update_user():
 
 @user_blueprint.route('/user/image', methods=['POST'])
 @roles_required([RoleName.user])
-def upload_image():
+def upload_user_image():
     session = get_session()
-
-    if 'image' not in request.files:
-        return abort(400, 'No file to save')
-
-    image = request.files['image']
-
-    if image.filename == '':
-        return abort(400, 'No files to save')
-
-    ext = image.filename.rsplit('.', 1)[::-1][0]
-
-    if ext not in current_app.config['ALLOWED_EXTENSIONS']:
-        return abort(400, 'This file type is not allowed')
-
-    image.filename = str(uuid4()) + '.' + ext
-    current_path = current_app.config['DIRNAME']
-    assets_path = current_app.config['ASSETS_PATH']
-
-    image.save(os.path.join(current_path, assets_path, image.filename))
 
     current_user_id = get_jwt_identity()
     user = session.query(User).get(current_user_id)
 
-    if user.image is not None:
-        path = os.path.join(current_path, assets_path, user.image)
-        if os.path.isfile(path):
-            os.remove(os.path.join(current_path, assets_path, user.image))
+    filename = upload_image(user.image)
 
-    user.image = image.filename
+    user.image = filename
 
     session.commit()
     session.close()
 
-    return 'assets/' + image.filename
+    return 'assets/' + filename
 
 
 @user_blueprint.route('/user/image', methods=['DELETE'])
 @roles_required([RoleName.user])
-def delete_image():
+def delete_user_image():
     session = get_session()
 
     current_user_id = get_jwt_identity()
