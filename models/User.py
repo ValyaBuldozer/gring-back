@@ -1,5 +1,6 @@
 from sqlalchemy import desc
 
+from models.UserVisitedPlace import UserVisitedPlace
 from models.RoleName import RoleName
 from models.Role import Role
 from models.base import db
@@ -50,12 +51,19 @@ class User(db.Model):
         secondary="user_favorite",
         single_parent=True,
         order_by=desc(UserFavorite.c.add_time),
-        backref=db.backref('user')
+        backref=db.backref('user_favorites')
     )
     image = db.Column(
         db.String(41),
         name="user_image",
         nullable=True
+    )
+    visited_places = relationship(
+        "Place",
+        secondary="user_visited_place",
+        single_parent=True,
+        order_by=desc(UserVisitedPlace.c.add_time),
+        backref=db.backref('user_visited_places')
     )
 
     def can(self, allowed_roles):

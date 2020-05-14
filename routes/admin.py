@@ -15,7 +15,7 @@ from util.current_user import get_current_user
 from models.Role import Role
 from flask_expects_json import expects_json
 from util import bcrypt_init
-
+from util.upload_image import upload_image
 
 admin_blueprint = Blueprint('admin', __name__)
 
@@ -50,7 +50,7 @@ post_admin_schema = {
 }
 
 
-@admin_blueprint.route('/admin/users/registration', methods=['PUT'])
+@admin_blueprint.route('/admin/users', methods=['PUT'])
 @expects_json(put_admin_schema)
 @roles_required([RoleName.user_moder])
 def admin_register_new_user():
@@ -101,7 +101,7 @@ def admin_register_new_user():
     return 'ok'
 
 
-@admin_blueprint.route('/admin/users/update/<user_id>', methods=['POST'])
+@admin_blueprint.route('/admin/users/<user_id>', methods=['POST'])
 @expects_json(post_admin_schema)
 @roles_required([RoleName.user_moder])
 def admin_update_user(user_id):
@@ -149,6 +149,10 @@ def admin_update_user(user_id):
 
     if 'password' in content:
         user.password = bcrypt_init.bcrypt.generate_password_hash(content['password'])
+
+    if 'image' in request.files:
+        filename = upload_image(user.image)
+        user.image = filename
 
     user.roles = roles
 

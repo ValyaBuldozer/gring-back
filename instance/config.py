@@ -18,6 +18,6 @@ JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
 
 DIRNAME = os.path.dirname(os.path.abspath(__file__))
 
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 AVATAR_SIZE = 150
 MAX_CONTENT_LENGTH = 5 * 1024 * 1024
