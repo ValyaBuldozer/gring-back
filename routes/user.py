@@ -18,7 +18,7 @@ from flask_expects_json import expects_json
 from util import bcrypt_init
 from email.utils import parseaddr
 
-from util.upload_image import upload_image
+from util.image_service import upload_image, delete_image
 
 user_blueprint = Blueprint('user', __name__)
 
@@ -75,53 +75,6 @@ def get_user_visited_by_id():
     session.close()
 
     return json_visited_places
-
-
-@user_blueprint.route('/user/block/<user_id>', methods=['POST'])
-@roles_required([RoleName.user_moder])
-def block_user_by_id(user_id):
-    session = get_session()
-
-    user = session.query(User).get(user_id)
-    if user is None:
-        session.close()
-        abort(404, "User with id = %s not found" % user_id)
-        return
-
-    if user.is_admin():
-        session.close()
-        abort(400, "User with id = %s cannot be blocked" % user_id)
-        return
-
-    user.is_active = False
-
-    session.commit()
-    session.close()
-
-    return 'ok'
-
-
-@user_blueprint.route('/user/unblock/<user_id>', methods=['POST'])
-@roles_required([RoleName.user_moder])
-def unblock_user_by_id(user_id):
-    session = get_session()
-
-    user = session.query(User).get(user_id)
-    if user is None:
-        session.close()
-        abort(404, "User with id = %s not found" % user_id)
-
-    if user.is_active:
-        session.close()
-        abort(400, "User with id = %s is already active" % user_id)
-        return
-
-    user.is_active = True
-
-    session.commit()
-    session.close()
-
-    return 'ok'
 
 
 put_favorite_schema = {
@@ -254,6 +207,7 @@ put_user_schema = {
         'username': {'type': 'string'},
         'password': {'type': 'string'},
         'email': {'type': 'string'},
+        'image': {'type': 'string'},
     },
     'required': ['username', 'password', 'email']
 }
@@ -264,6 +218,7 @@ post_user_schema = {
         'username': {'type': 'string'},
         'password': {'type': 'string'},
         'email': {'type': 'string'},
+        'image': {'type': 'string'},
     }
 }
 
@@ -277,6 +232,9 @@ def basic_register_new_user():
     users = session.query(User).all()
 
     username = content['username']
+    if username is None:
+        abort(400, "User suka = %s already exist" % username)
+        return
     if any(user.name == username for user in users):
         session.close()
         abort(409, "User with name = %s already exist" % username)
@@ -295,7 +253,10 @@ def basic_register_new_user():
 
     roles = [session.query(Role).get(RoleName.user.value)]
 
-    image = get_default_avatar(username)
+    if 'image' in content:
+        image = content['image']
+    else:
+        image = get_default_avatar(username)
 
     session.add(User(
         name=username,
@@ -348,6 +309,9 @@ def basic_update_user():
     if 'password' in content:
         user.password = bcrypt_init.bcrypt.generate_password_hash(content['password'])
 
+    if 'image' in content:
+        user.image = content['image']
+
     session.commit()
     session.close()
 
@@ -369,7 +333,7 @@ def upload_user_image():
     session.commit()
     session.close()
 
-    return 'assets/' + filename
+    return filename
 
 
 @user_blueprint.route('/user/image', methods=['DELETE'])
@@ -380,18 +344,14 @@ def delete_user_image():
     current_user_id = get_jwt_identity()
     user = session.query(User).get(current_user_id)
 
-    current_path = current_app.config['DIRNAME']
-    assets_path = current_app.config['ASSETS_PATH']
-
     if user.image is not None:
-        path = os.path.join(current_path, assets_path, user.image)
-        if os.path.isfile(path):
-            os.remove(os.path.join(current_path, assets_path, user.image))
+        delete_image(user.image)
         user.image = get_default_avatar(user.name)
     else:
-        return abort(400, 'User has no picture to delete')
+        return abort(400, 'User has no avatar to delete')
 
     session.commit()
     session.close()
 
     return 'ok'
+

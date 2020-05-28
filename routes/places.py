@@ -2,8 +2,11 @@ from uuid import uuid4
 
 from flask import Blueprint, request, abort, g
 
+from models.Language import Language
 from models.LocaleString import LocaleString
+from util.audio_service import delete_audio
 from util.get_locale import validate_locale, get_locale, get_post_locale
+from util.image_service import delete_image
 from util.json import returns_json, convert_to_json
 from models.Place import Place
 from models.City import City
@@ -240,7 +243,16 @@ def delete_place_by_id(object_id):
         abort(404, "Place with id = %s not found" % object_id)
         return
 
+    if place.image_link is not None:
+        delete_image(place.image_link)
+
+    for lang in Language.__members__:
+        audio = place.audioguide_link.get(lang)
+        if audio is not None:
+            delete_audio(audio)
+
     session.delete(place)
+
     session.commit()
     session.close()
 

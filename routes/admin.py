@@ -3,6 +3,7 @@ from uuid import uuid4
 from flask import Blueprint, g, request, abort, jsonify, current_app
 from flask_avatars import Identicon
 from models.Review import Review
+from util.audio_service import upload_audio
 from util.avatars_init import get_default_avatar
 from util.json import convert_to_json
 from flask_jwt_extended import get_jwt_identity
@@ -15,12 +16,12 @@ from util.current_user import get_current_user
 from models.Role import Role
 from flask_expects_json import expects_json
 from util import bcrypt_init
-from util.upload_image import upload_image
+from util.image_service import upload_image, delete_image
 
 admin_blueprint = Blueprint('admin', __name__)
 
 
-put_admin_schema = {
+put_user_admin_schema = {
     'type': 'object',
     'properties': {
         'username': {'type': 'string'},
@@ -30,12 +31,13 @@ put_admin_schema = {
             'type': 'array',
             'item': {'type': 'integer'},
             "minItems": 1
-        }
+        },
+        'image': {'type': 'string'}
     },
     'required': ['username', 'password', 'email', 'roles']
 }
 
-post_admin_schema = {
+post_user_admin_schema = {
     'type': 'object',
     'properties': {
         'username': {'type': 'string'},
@@ -45,13 +47,14 @@ post_admin_schema = {
             'type': 'array',
             'item': {'type': 'integer'},
             "minItems": 1
-        }
+        },
+        'image': {'type': 'string'}
     }
 }
 
 
 @admin_blueprint.route('/admin/users', methods=['PUT'])
-@expects_json(put_admin_schema)
+@expects_json(put_user_admin_schema)
 @roles_required([RoleName.user_moder])
 def admin_register_new_user():
     content = g.data
@@ -85,7 +88,10 @@ def admin_register_new_user():
 
     roles = [session.query(Role).get(RoleName.user.value)]
 
-    image = get_default_avatar(username)
+    if 'image' in content:
+        image = content['image']
+    else:
+        image = get_default_avatar(username)
 
     session.add(User(
         name=content['username'],
@@ -102,7 +108,7 @@ def admin_register_new_user():
 
 
 @admin_blueprint.route('/admin/users/<user_id>', methods=['POST'])
-@expects_json(post_admin_schema)
+@expects_json(post_user_admin_schema)
 @roles_required([RoleName.user_moder])
 def admin_update_user(user_id):
     content = g.data
@@ -150,11 +156,29 @@ def admin_update_user(user_id):
     if 'password' in content:
         user.password = bcrypt_init.bcrypt.generate_password_hash(content['password'])
 
-    if 'image' in request.files:
-        filename = upload_image(user.image)
-        user.image = filename
+    if 'image' in content:
+        user.image = content['image']
 
     user.roles = roles
+
+    session.commit()
+    session.close()
+
+    return 'ok'
+
+
+@admin_blueprint.route('/admin/avatars/<user_id>', methods=['DELETE'])
+@roles_required([RoleName.user_moder])
+def admin_delete_avatar_by_user_id(user_id):
+    session = get_session()
+
+    user = session.query(User).get(user_id)
+
+    if user.image is not None:
+        delete_image(user.image)
+        user.image = get_default_avatar(user.name)
+    else:
+        return abort(400, 'User has no avatar to delete')
 
     session.commit()
     session.close()
@@ -196,3 +220,66 @@ def delete_user_review():
     session.close()
 
     return 'ok'
+
+
+@admin_blueprint.route('/admin/block/<user_id>', methods=['POST'])
+@roles_required([RoleName.user_moder])
+def block_user_by_id(user_id):
+    session = get_session()
+
+    user = session.query(User).get(user_id)
+    if user is None:
+        session.close()
+        abort(404, "User with id = %s not found" % user_id)
+        return
+
+    if user.is_admin():
+        session.close()
+        abort(400, "User with id = %s cannot be blocked" % user_id)
+        return
+
+    user.is_active = False
+
+    session.commit()
+    session.close()
+
+    return 'ok'
+
+
+@admin_blueprint.route('/admin/unblock/<user_id>', methods=['POST'])
+@roles_required([RoleName.user_moder])
+def unblock_user_by_id(user_id):
+    session = get_session()
+
+    user = session.query(User).get(user_id)
+    if user is None:
+        session.close()
+        abort(404, "User with id = %s not found" % user_id)
+
+    if user.is_active:
+        session.close()
+        abort(400, "User with id = %s is already active" % user_id)
+        return
+
+    user.is_active = True
+
+    session.commit()
+    session.close()
+
+    return 'ok'
+
+
+@admin_blueprint.route('/admin/images', methods=['PUT'])
+@roles_required([RoleName.user_moder, RoleName.content_moder])
+def put_image():
+    filename = upload_image(old_image=None)
+
+    return filename
+
+
+@admin_blueprint.route('/admin/audios', methods=['PUT'])
+@roles_required([RoleName.user_moder, RoleName.content_moder])
+def put_audio():
+    filename = upload_audio(old_audio=None)
+
+    return filename

@@ -2,8 +2,11 @@ from uuid import uuid4
 
 from flask import Blueprint, request, abort, g
 
+from models.Language import Language
 from models.LocaleString import LocaleString
+from util.audio_service import delete_audio
 from util.get_locale import validate_locale, get_locale, get_post_locale
+from util.image_service import delete_image
 from util.json import returns_json, convert_to_json
 from models.HistoricalPerson import HistoricalPerson
 from models.City import City
@@ -277,7 +280,7 @@ def post_hisrorical_person_by_id(object_id):
 
 
 @historical_person_blueptint.route('/historical_persons/<object_id>', methods=['DELETE'])
-def delete_hisrorical_person_by_id(object_id):
+def delete_historical_person_by_id(object_id):
     session = get_session()
     historical_person = session.query(HistoricalPerson).get(object_id)
 
@@ -286,8 +289,18 @@ def delete_hisrorical_person_by_id(object_id):
         abort(404, "'Historical person with id = %s not found" % object_id)
         return
 
+    if historical_person.image_link is not None:
+        delete_image(historical_person.image_link)
+
+    for lang in Language.__members__:
+        audio = historical_person.audioguide_link.get(lang)
+        if audio is not None:
+            delete_audio(audio)
+
     session.delete(historical_person)
+
     session.commit()
     session.close()
 
     return 'ok'
+

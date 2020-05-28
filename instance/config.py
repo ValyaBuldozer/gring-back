@@ -20,4 +20,6 @@ DIRNAME = os.path.dirname(os.path.abspath(__file__))
 
 ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 AVATAR_SIZE = 150
-MAX_CONTENT_LENGTH = 5 * 1024 * 1024
+MAX_CONTENT_LENGTH = 16 * 1024 * 1024
+
+ALLOWED_AUDIO_EXTENSIONS = {'m4a', 'mp3', 'wav'}
