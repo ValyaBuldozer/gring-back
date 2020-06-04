@@ -4,9 +4,9 @@ from flask import current_app
 from flask_avatars import Avatars, Identicon
 
 
-def avatars_init(app):
+def avatars_init():
     global avatars
-    avatars = Avatars(app)
+    avatars = Avatars(current_app)
 
 
 def get_default_avatar(username):

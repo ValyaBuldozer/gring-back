@@ -12,10 +12,8 @@ from models.base import get_session
 from flask_expects_json import expects_json
 from datetime import datetime
 from util.decorators import roles_required
+from util import translation_init
 from models.RoleName import RoleName
-from util.current_user import get_current_user
-from yandex_translate import YandexTranslate
-from flask import current_app
 
 
 review_blueptint = Blueprint('reviews', __name__)
@@ -80,8 +78,7 @@ def put_new_review(entity_id):
     content = g.data
     text = content['text']
 
-    translate = YandexTranslate(current_app.config['YANDEX_KEY'])
-    language = translate.detect(text)
+    language = translation_init.translate.detect(text)
 
     user_id = get_jwt_identity()
     review = Review(

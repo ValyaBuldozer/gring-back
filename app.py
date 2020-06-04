@@ -45,6 +45,7 @@ from flask_migrate import Migrate
 from util.bcrypt_init import bcrypt_init
 from util.avatars_init import avatars_init
 from werkzeug.exceptions import HTTPException
+from util.translation_init import translation_init
 
 
 app = Flask(__name__, instance_relative_config=True)
@@ -73,9 +74,10 @@ jwt = JWTManager(app)
 
 with app.app_context():
     migrate = Migrate(app, db)
-    bcrypt_init(app)
-    avatars_init(app)
+    bcrypt_init()
+    avatars_init()
     osrm_init()
+    translation_init()
 
 
 @app.route(api_url_prefix + '/<path:path>')
