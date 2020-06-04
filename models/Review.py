@@ -41,6 +41,10 @@ class Review(db.Model):
         db.Text,
         name="review_text"
     )
+    locale = db.Column(
+        db.String(2),
+        name="review_locale"
+    )
 
     def to_json(self, locale):
         return {
@@ -48,5 +52,6 @@ class Review(db.Model):
             'entity': self.entity_id,
             'time': str(self.time),
             'rating': self.rating,
-            'text': str(self.text) if self.text is not None else None
+            'text': str(self.text) if self.text is not None else None,
+            'locale': self.locale
         }

@@ -1,8 +1,10 @@
+from sqlalchemy import case, desc
 from flask import Blueprint, request, abort, g
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from models.Entity import Entity
 from models.User import User
+from util.get_locale import get_locale
 from util.json import returns_json, convert_to_json
 from models.Review import Review
 from models.Object import Object
@@ -12,6 +14,8 @@ from datetime import datetime
 from util.decorators import roles_required
 from models.RoleName import RoleName
 from util.current_user import get_current_user
+from yandex_translate import YandexTranslate
+from flask import current_app
 
 
 review_blueptint = Blueprint('reviews', __name__)
@@ -24,10 +28,13 @@ def get_reviews():
     limit = request.args.get('limit')
 
     session = get_session()
+    locale = get_locale().name
 
     reviews = session.query(Review).filter(
         Review.entity_id == entity_id if entity_id is not None else True
-    ).limit(limit).all()
+    ).order_by(case(((Review.locale == locale, 1),), else_=2), desc(Review.time), )\
+        .limit(limit)\
+        .all()
 
     json_reviews = convert_to_json(reviews)
 
@@ -70,14 +77,20 @@ def put_new_review(entity_id):
         abort(400, "User with id = %s already has a review for entity with id = %s" % (user.id, entity_id))
         return
 
-    user_id = get_jwt_identity()
     content = g.data
+    text = content['text']
+
+    translate = YandexTranslate(current_app.config['YANDEX_KEY'])
+    language = translate.detect(text)
+
+    user_id = get_jwt_identity()
     review = Review(
         user_id=user_id,
         entity_id=entity_id,
         rating=content['rating'],
         time=datetime.now(),
-        text=content['text']
+        text=content['text'],
+        locale=language
     )
     
     session.add(review)

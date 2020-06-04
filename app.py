@@ -39,7 +39,7 @@ from routes.categories import category_blueprint
 from routes.user import user_blueprint
 from routes.admin import admin_blueprint
 from commands.translation import translation_command_blueprint
-from commands.default_avatar_insert import avatar_command_blueprint
+from commands.avatar import avatar_command_blueprint
 from util.osrm_client import osrm_init
 from flask_migrate import Migrate
 from util.bcrypt_init import bcrypt_init

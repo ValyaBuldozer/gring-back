@@ -21,7 +21,7 @@ def upgrade():
     op.create_table('user_visited_place',
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('place_id', sa.Integer(), nullable=False),
-    sa.Column('add_time', sa.DateTime(), nullable=False),
+    sa.Column('add_time', sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp()),
     sa.ForeignKeyConstraint(['place_id'], ['place.object_id'], ondelete='cascade'),
     sa.ForeignKeyConstraint(['user_id'], ['user.user_id'], ondelete='cascade')
     )

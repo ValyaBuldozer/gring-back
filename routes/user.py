@@ -39,6 +39,120 @@ def get_current_user():
     return json_user
 
 
+put_user_schema = {
+    'type': 'object',
+    'properties': {
+        'username': {'type': 'string'},
+        'password': {'type': 'string'},
+        'email': {'type': 'string'},
+        'image': {'type': 'string'},
+    },
+    'required': ['username', 'password', 'email']
+}
+
+post_user_schema = {
+    'type': 'object',
+    'properties': {
+        'username': {'type': 'string'},
+        'password': {'type': 'string'},
+        'email': {'type': 'string'},
+        'image': {'type': 'string'},
+    }
+}
+
+
+@user_blueprint.route('/user', methods=['PUT'])
+@expects_json(put_user_schema)
+def basic_register_new_user():
+    content = g.data
+    session = get_session()
+
+    users = session.query(User).all()
+
+    username = content['username']
+    if any(user.name == username for user in users):
+        session.close()
+        abort(409, "User with name = %s already exist" % username)
+        return
+
+    email = content['email']
+    if any(user.email == email for user in users):
+        session.close()
+        abort(409, "User with email = %s already exist" % email)
+        return
+
+    if '@' not in parseaddr(email)[1]:
+        session.close()
+        abort(400, "Invalid email")
+        return
+
+    roles = [session.query(Role).get(RoleName.user.value)]
+
+    if 'image' in content:
+        image = content['image']
+    else:
+        image = get_default_avatar(username)
+
+    session.add(User(
+        name=username,
+        password=bcrypt_init.bcrypt.generate_password_hash(content['password']),
+        email=email,
+        roles=roles,
+        image=image
+    ))
+
+    session.commit()
+    session.close()
+
+    return 'ok'
+
+
+@user_blueprint.route('/user', methods=['POST'])
+@expects_json(post_user_schema)
+@roles_required([RoleName.user])
+def basic_update_user():
+    content = g.data
+    session = get_session()
+
+    users = session.query(User).all()
+
+    current_user_id = get_jwt_identity()
+    user = session.query(User).get(current_user_id)
+    if user is None:
+        session.close()
+        abort(404, "User with id = %s not found" % current_user_id)
+        return
+
+    users = [u for u in users if u.id is not user.id]
+
+    if 'username' in content:
+        if any(user.name == content['username'] for user in users):
+            session.close()
+            abort(409, "User with name = %s already exist" % content['username'])
+            return
+        else:
+            user.name = content['username']
+
+    if 'email' in content:
+        if any(user.email == content['email'] for user in users):
+            session.close()
+            abort(409, "User with email = %s already exist" % content['email'])
+            return
+        else:
+            user.email = content['email']
+
+    if 'password' in content:
+        user.password = bcrypt_init.bcrypt.generate_password_hash(content['password'])
+
+    if 'image' in content:
+        user.image = content['image']
+
+    session.commit()
+    session.close()
+
+    return 'ok'
+
+
 @user_blueprint.route('/user/favorite', methods=['GET'])
 @roles_required([RoleName.user])
 @returns_json
@@ -56,25 +170,6 @@ def get_user_favorite_by_id():
     session.close()
 
     return json_favorites
-
-
-@user_blueprint.route('/user/visited', methods=['GET'])
-@roles_required([RoleName.user])
-@returns_json
-def get_user_visited_by_id():
-    session = get_session()
-
-    current_user_id = get_jwt_identity()
-    user = session.query(User).get(current_user_id)
-    locale = get_locale()
-
-    json_visited_places = convert_to_json(
-        list(map(lambda entity: entity.to_entity_json(locale), user.visited_places))
-     )
-
-    session.close()
-
-    return json_visited_places
 
 
 put_favorite_schema = {
@@ -139,6 +234,25 @@ def delete_favorite(entity_id):
     return 'ok'
 
 
+@user_blueprint.route('/user/visited', methods=['GET'])
+@roles_required([RoleName.user])
+@returns_json
+def get_user_visited_by_id():
+    session = get_session()
+
+    current_user_id = get_jwt_identity()
+    user = session.query(User).get(current_user_id)
+    locale = get_locale()
+
+    json_visited_places = convert_to_json(
+        list(map(lambda entity: entity.to_entity_json(locale), user.visited_places))
+     )
+
+    session.close()
+
+    return json_visited_places
+
+
 put_visited_place_schema = {
     'type': 'object',
     'properties': {
@@ -194,123 +308,6 @@ def delete_visited_place(place_id):
     user = session.query(User).get(current_user_id)
 
     user.visited_places.remove(visited_place)
-
-    session.commit()
-    session.close()
-
-    return 'ok'
-
-
-put_user_schema = {
-    'type': 'object',
-    'properties': {
-        'username': {'type': 'string'},
-        'password': {'type': 'string'},
-        'email': {'type': 'string'},
-        'image': {'type': 'string'},
-    },
-    'required': ['username', 'password', 'email']
-}
-
-post_user_schema = {
-    'type': 'object',
-    'properties': {
-        'username': {'type': 'string'},
-        'password': {'type': 'string'},
-        'email': {'type': 'string'},
-        'image': {'type': 'string'},
-    }
-}
-
-
-@user_blueprint.route('/user/registration', methods=['PUT'])
-@expects_json(put_user_schema)
-def basic_register_new_user():
-    content = g.data
-    session = get_session()
-
-    users = session.query(User).all()
-
-    username = content['username']
-    if username is None:
-        abort(400, "User suka = %s already exist" % username)
-        return
-    if any(user.name == username for user in users):
-        session.close()
-        abort(409, "User with name = %s already exist" % username)
-        return
-
-    email = content['email']
-    if any(user.email == email for user in users):
-        session.close()
-        abort(409, "User with email = %s already exist" % email)
-        return
-
-    if '@' not in parseaddr(email)[1]:
-        session.close()
-        abort(400, "Invalid email")
-        return
-
-    roles = [session.query(Role).get(RoleName.user.value)]
-
-    if 'image' in content:
-        image = content['image']
-    else:
-        image = get_default_avatar(username)
-
-    session.add(User(
-        name=username,
-        password=bcrypt_init.bcrypt.generate_password_hash(content['password']),
-        email=email,
-        roles=roles,
-        image=image
-    ))
-
-    session.commit()
-    session.close()
-
-    return 'ok'
-
-
-@user_blueprint.route('/user/update', methods=['POST'])
-@expects_json(post_user_schema)
-@roles_required([RoleName.user])
-def basic_update_user():
-    content = g.data
-    session = get_session()
-
-    users = session.query(User).all()
-
-    current_user_id = get_jwt_identity()
-    user = session.query(User).get(current_user_id)
-    if user is None:
-        session.close()
-        abort(404, "User with id = %s not found" % current_user_id)
-        return
-
-    users = [u for u in users if u.id is not user.id]
-
-    if 'username' in content:
-        if any(user.name == content['username'] for user in users):
-            session.close()
-            abort(409, "User with name = %s already exist" % content['username'])
-            return
-        else:
-            user.name = content['username']
-
-    if 'email' in content:
-        if any(user.email == content['email'] for user in users):
-            session.close()
-            abort(409, "User with email = %s already exist" % content['email'])
-            return
-        else:
-            user.email = content['email']
-
-    if 'password' in content:
-        user.password = bcrypt_init.bcrypt.generate_password_hash(content['password'])
-
-    if 'image' in content:
-        user.image = content['image']
 
     session.commit()
     session.close()

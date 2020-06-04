@@ -1,5 +1,6 @@
 from flask import Blueprint, current_app
 from models.Language import Language
+from models.Review import Review
 from models.base import get_session
 from models.LocaleString import LocaleString
 import click
@@ -45,6 +46,25 @@ def create_locale(locale, with_update=None):
         elif with_update:
             translation = translate.translate(string.text, locale)
             target_string.text = translation['text']
+
+    session.commit()
+    session.close()
+
+    print('Ok')
+
+
+@translation_command_blueprint.cli.command("insert-review-locale")
+def create_locale():
+    translate = YandexTranslate(current_app.config['YANDEX_KEY'])
+    session = get_session()
+
+    reviews = session.query(Review).filter(
+        Review.locale.is_(None)
+    ).all()
+
+    for r in reviews:
+        language = translate.detect(r.text)
+        r.locale = language
 
     session.commit()
     session.close()

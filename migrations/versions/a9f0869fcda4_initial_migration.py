@@ -94,7 +94,7 @@ def upgrade():
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('entity_id', sa.Integer(), nullable=False),
     sa.Column('review_rating', sa.SMALLINT(), nullable=False),
-    sa.Column('review_time', sa.DateTime(), nullable=False),
+    sa.Column('review_time', sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp()),
     sa.Column('review_text', sa.Text(), nullable=True),
     sa.ForeignKeyConstraint(['entity_id'], ['entity.entity_id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['user.user_id'], ),
@@ -112,7 +112,7 @@ def upgrade():
     op.create_table('user_favorite',
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('entity_id', sa.Integer(), nullable=False),
-    sa.Column('add_time', sa.DateTime(), nullable=False),
+    sa.Column('add_time', sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp()),
     sa.ForeignKeyConstraint(['entity_id'], ['entity.entity_id'], ondelete='cascade'),
     sa.ForeignKeyConstraint(['user_id'], ['user.user_id'], ondelete='cascade')
     )

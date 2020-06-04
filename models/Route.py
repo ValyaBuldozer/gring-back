@@ -100,11 +100,11 @@ class Route(Entity):
             geo_point = [geolocation.longitude, geolocation.latitude]
             geo_points.append(geo_point)
 
-        response = osrm_client.client.route(
-            coordinates=geo_points,
-            overview=osrm.overview.full)
+        if len(geo_points) > 0:
+            response = osrm_client.client.route(
+                coordinates=geo_points,
+                overview=osrm.overview.full)
+            if 'routes' in response:
+                return response['routes'][0]['distance'], response['routes'][0]['duration']
 
-        if 'routes' in response:
-            return response['routes'][0]['distance'], response['routes'][0]['duration']
-        else:
-            return '', ''
+        return '', ''
