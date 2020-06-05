@@ -39,11 +39,13 @@ class Review(db.Model):
     )
     text = db.Column(
         db.Text,
-        name="review_text"
+        name="review_text",
+        nullable=True
     )
     locale = db.Column(
         db.String(2),
-        name="review_locale"
+        name="review_locale",
+        nullable=True
     )
 
     def to_json(self, locale):

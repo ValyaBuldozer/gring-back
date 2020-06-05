@@ -56,7 +56,7 @@ class User(db.Model):
     image = db.Column(
         db.String(41),
         name="user_image",
-        nullable=True
+        nullable=False
     )
     visited_places = relationship(
         "Place",
