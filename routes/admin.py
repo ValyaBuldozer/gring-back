@@ -20,7 +20,6 @@ from util.image_service import upload_image, delete_image
 
 admin_blueprint = Blueprint('admin', __name__)
 
-
 put_user_admin_schema = {
     'type': 'object',
     'properties': {
@@ -55,7 +54,7 @@ post_user_admin_schema = {
 
 @admin_blueprint.route('/admin/users', methods=['PUT'])
 @expects_json(put_user_admin_schema)
-@roles_required([RoleName.user_moder])
+@roles_required([RoleName.admin, RoleName.user_moder])
 def admin_register_new_user():
     content = g.data
     session = get_session()
@@ -84,9 +83,15 @@ def admin_register_new_user():
             abort(400, "Role with id = %s not found" % role_id)
             return
 
-        roles.append(role)
+        current_user_id = get_jwt_identity()
+        user = session.query(User).get(current_user_id)
+        moder_roles = [RoleName.admin.value, RoleName.content_moder.value, RoleName.user_moder.value]
+        if role.id in moder_roles and not user.is_admin():
+            session.close()
+            abort(403, "Not enough rights to register user with role = %s" % role_id)
+            return
 
-    roles = [session.query(Role).get(RoleName.user.value)]
+        roles.append(role)
 
     if 'image' in content:
         image = content['image']
@@ -109,7 +114,7 @@ def admin_register_new_user():
 
 @admin_blueprint.route('/admin/users/<user_id>', methods=['POST'])
 @expects_json(post_user_admin_schema)
-@roles_required([RoleName.user_moder])
+@roles_required([RoleName.admin, RoleName.user_moder])
 def admin_update_user(user_id):
     content = g.data
     session = get_session()
@@ -120,6 +125,19 @@ def admin_update_user(user_id):
     if user is None:
         session.close()
         abort(404, "User with id = %s not found" % user_id)
+        return
+
+    current_user_id = get_jwt_identity()
+    author = session.query(User).get(current_user_id)
+
+    if user.is_admin() and not user.id == author.id:
+        session.close()
+        abort(404, "User with id = %s cannot be updated" % user_id)
+        return
+
+    if user.is_moder() and not author.is_admin() and not user.id == author.id:
+        session.close()
+        abort(403, "Not enough rights to update user with id = %s" % user_id)
         return
 
     users = [u for u in users if u.id is not user.id]
@@ -168,11 +186,24 @@ def admin_update_user(user_id):
 
 
 @admin_blueprint.route('/admin/avatars/<user_id>', methods=['DELETE'])
-@roles_required([RoleName.user_moder])
+@roles_required([RoleName.admin, RoleName.user_moder])
 def admin_delete_avatar_by_user_id(user_id):
     session = get_session()
 
     user = session.query(User).get(user_id)
+
+    current_user_id = get_jwt_identity()
+    author = session.query(User).get(current_user_id)
+
+    if user.is_admin() and not user.id == author.id:
+        session.close()
+        abort(404, "Avatar which belongs to the user with id = %s cannot be deleted" % user_id)
+        return
+
+    if user.is_moder() and not author.is_admin() and not user.id == author.id:
+        session.close()
+        abort(403, "Not enough rights to delete avatar which belongs to the user with id = %s" % user_id)
+        return
 
     if user.image is not None:
         delete_image(user.image)
@@ -198,12 +229,27 @@ delete_review_schema = {
 
 @admin_blueprint.route('/admin/reviews', methods=['DELETE'])
 @expects_json(delete_review_schema)
-@roles_required([RoleName.user_moder])
+@roles_required([RoleName.admin, RoleName.user_moder])
 def delete_user_review():
     content = g.data
     session = get_session()
 
     user_id = content['user_id']
+    user = session.query(User).get(user_id)
+
+    current_user_id = get_jwt_identity()
+    author = session.query(User).get(current_user_id)
+
+    if user.is_admin() and not user.id == author.id:
+        session.close()
+        abort(404, "Review which belongs to the user with id = %s cannot be deleted" % user_id)
+        return
+
+    if user.is_moder() and not author.is_admin() and not user.id == author.id:
+        session.close()
+        abort(403, "Not enough rights to delete review which belongs to the user with id = %s" % user_id)
+        return
+
     entity_id = content['entity_id']
     review = session.query(Review).filter(
         Review.user_id == user_id,
@@ -223,7 +269,7 @@ def delete_user_review():
 
 
 @admin_blueprint.route('/admin/block/<user_id>', methods=['POST'])
-@roles_required([RoleName.user_moder])
+@roles_required([RoleName.admin, RoleName.user_moder])
 def block_user_by_id(user_id):
     session = get_session()
 
@@ -247,7 +293,7 @@ def block_user_by_id(user_id):
 
 
 @admin_blueprint.route('/admin/unblock/<user_id>', methods=['POST'])
-@roles_required([RoleName.user_moder])
+@roles_required([RoleName.admin, RoleName.user_moder])
 def unblock_user_by_id(user_id):
     session = get_session()
 
@@ -270,7 +316,7 @@ def unblock_user_by_id(user_id):
 
 
 @admin_blueprint.route('/admin/images', methods=['PUT'])
-@roles_required([RoleName.user_moder, RoleName.content_moder])
+@roles_required([RoleName.admin, RoleName.user_moder, RoleName.content_moder])
 def put_image():
     filename = upload_image(old_image=None)
 
@@ -278,7 +324,7 @@ def put_image():
 
 
 @admin_blueprint.route('/admin/audios', methods=['PUT'])
-@roles_required([RoleName.user_moder, RoleName.content_moder])
+@roles_required([RoleName.admin, RoleName.user_moder, RoleName.content_moder])
 def put_audio():
     filename = upload_audio(old_audio=None)
 

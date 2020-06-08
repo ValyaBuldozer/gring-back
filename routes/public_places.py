@@ -103,7 +103,7 @@ put_public_place_schema = {
 
 @public_place_blueptint.route('/public_places', methods=['PUT'])
 @expects_json(put_public_place_schema)
-@roles_required([RoleName.content_moder])
+@roles_required([RoleName.admin, RoleName.content_moder])
 def put_new_public_place():
     session = get_session()
     content = g.data
@@ -215,7 +215,7 @@ def put_new_public_place():
 
 @public_place_blueptint.route('/public_places/<object_id>', methods=['POST'])
 @expects_json(put_public_place_schema)
-@roles_required([RoleName.content_moder])
+@roles_required([RoleName.admin, RoleName.content_moder])
 def post_public_place_by_id(object_id):
     session = get_session()
     public_place = session.query(PublicPlace).get(object_id)
@@ -310,7 +310,7 @@ def post_public_place_by_id(object_id):
 
 
 @public_place_blueptint.route('/public_places/<object_id>', methods=['DELETE'])
-@roles_required([RoleName.content_moder])
+@roles_required([RoleName.admin, RoleName.content_moder])
 def delete_public_place_by_id(object_id):
     session = get_session()
     public_place = session.query(PublicPlace).get(object_id)
