@@ -29,8 +29,9 @@ def get_reviews():
     locale = get_locale().name
 
     reviews = session.query(Review).filter(
-        Review.entity_id == entity_id if entity_id is not None else True
-    ).order_by(case(((Review.locale == locale, 1),), else_=2), desc(Review.time), )\
+        Review.entity_id == entity_id if entity_id is not None else True,
+        Review.text.isnot(None)
+    ).order_by(case(((Review.locale == locale, 1),), else_=2), desc(Review.time))\
         .limit(limit)\
         .all()
 
