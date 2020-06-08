@@ -21,7 +21,7 @@ def get_objects():
     objects = session.query(Object).filter(
         Object.city_id == city_id if city_id is not None else True,
         Object.type == object_type if object_type is not None else True,
-        Object.categories.any(Category.alias == category) if category is not None else True
+        Object.categories.any(Category.label == category) if category is not None else True
     ).all()
 
     locale = get_locale()
