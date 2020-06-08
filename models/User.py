@@ -69,7 +69,7 @@ class User(db.Model):
     def can(self, allowed_roles):
         user_role_ids = []
         for role in self.roles:
-            user_role_ids.append(role.id)
+            user_role_ids.append(role.name.value)
         for allowed_role in allowed_roles:
             if allowed_role.value in user_role_ids:
                 return True
@@ -79,14 +79,14 @@ class User(db.Model):
     def is_moder(self):
         moder_roles = [RoleName.content_moder.value, RoleName.user_moder.value]
         for role in self.roles:
-            if role.id in moder_roles:
+            if role.name.value in moder_roles:
                 return True
 
         return False
 
     def is_admin(self):
         for role in self.roles:
-            if role.id is RoleName.admin.value:
+            if role.name.value is RoleName.admin.value:
                 return True
 
         return False

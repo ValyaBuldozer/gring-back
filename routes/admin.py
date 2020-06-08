@@ -76,7 +76,7 @@ def admin_register_new_user():
     roles = []
 
     for role_id in content['roles']:
-        role = session.query(Role).get(RoleName(role_id).value)
+        role = session.query(Role).get(role_id)
 
         if role is None:
             session.close()
@@ -158,9 +158,8 @@ def admin_update_user(user_id):
         else:
             user.email = content['email']
 
-    roles = []
-
     if 'roles' in content:
+        roles = []
         for role_id in content['roles']:
             role = session.query(Role).get(RoleName(role_id).value)
 
@@ -171,13 +170,13 @@ def admin_update_user(user_id):
 
             roles.append(role)
 
+        user.roles = roles
+
     if 'password' in content:
         user.password = bcrypt_init.bcrypt.generate_password_hash(content['password'])
 
     if 'image' in content:
         user.image = content['image']
-
-    user.roles = roles
 
     session.commit()
     session.close()
