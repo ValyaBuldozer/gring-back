@@ -75,22 +75,58 @@ def put_new_review(entity_id):
         abort(400, "User with id = %s already has a review for entity with id = %s" % (user.id, entity_id))
         return
 
+    text = None
+    language = None
+
     content = g.data
-    text = content['text']
+    if 'text' in content:
+        text = content['text']
+        language = translation_init.translate.detect(text)
 
-    language = translation_init.translate.detect(text)
-
-    user_id = get_jwt_identity()
     review = Review(
-        user_id=user_id,
+        user_id=current_user_id,
         entity_id=entity_id,
         rating=content['rating'],
         time=datetime.now(),
-        text=content['text'],
+        text=text,
         locale=language
     )
     
     session.add(review)
+    session.commit()
+    session.close()
+
+    return 'ok'
+
+
+@review_blueptint.route('/reviews/<entity_id>', methods=['POST'])
+@expects_json(put_review_schema)
+@roles_required([RoleName.user])
+def post_review(entity_id):
+    session = get_session()
+
+    if session.query(Entity).get(entity_id) is None:
+        session.close()
+        abort(404, 'Entity not found')
+        return
+
+    current_user_id = get_jwt_identity()
+    user = session.query(User).get(current_user_id)
+
+    review = session.query(Review).filter(
+        Review.user_id == user.id,
+        Review.entity_id == entity_id
+    ).first()
+
+    content = g.data
+    if 'text' in content:
+        text = content['text']
+        language = translation_init.translate.detect(text)
+        review.text = text
+        review.locale = language
+
+    review.rating = content['rating']
+
     session.commit()
     session.close()
 
