@@ -14,5 +14,6 @@ class Role(db.Model):
     name = db.Column(
         db.Enum(RoleName),
         name="role_name",
-        nullable=False
+        nullable=False,
+        unique=True
     )

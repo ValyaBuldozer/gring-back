@@ -86,7 +86,9 @@ def basic_register_new_user():
         abort(400, "Invalid email")
         return
 
-    roles = [session.query(Role).get(RoleName.user.value)]
+    roles = [session.query(Role).filter(
+        Role.name == RoleName.user.name
+    ).first()]
 
     if 'image' in content:
         image = content['image']
