@@ -20,6 +20,7 @@ from email.utils import parseaddr
 
 from util.image_service import upload_image, delete_image
 
+
 user_blueprint = Blueprint('user', __name__)
 
 

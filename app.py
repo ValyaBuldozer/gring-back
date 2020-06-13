@@ -36,6 +36,7 @@ from routes.places import place_blueptint
 from routes.public_places import public_place_blueptint
 from routes.historical_persons import historical_person_blueptint
 from routes.categories import category_blueprint
+from routes.cities import city_blueprint
 from routes.user import user_blueprint
 from routes.admin import admin_blueprint
 from commands.translation import translation_command_blueprint
@@ -63,6 +64,7 @@ app.register_blueprint(place_blueptint, url_prefix=api_url_prefix)
 app.register_blueprint(public_place_blueptint, url_prefix=api_url_prefix)
 app.register_blueprint(historical_person_blueptint, url_prefix=api_url_prefix)
 app.register_blueprint(category_blueprint, url_prefix=api_url_prefix)
+app.register_blueprint(city_blueprint, url_prefix=api_url_prefix)
 app.register_blueprint(user_blueprint, url_prefix=api_url_prefix)
 app.register_blueprint(admin_blueprint, url_prefix=api_url_prefix)
 app.register_blueprint(translation_command_blueprint)

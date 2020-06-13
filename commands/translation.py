@@ -7,6 +7,7 @@ from models.LocaleString import LocaleString
 from util import translation_init
 import click
 
+
 translation_command_blueprint = Blueprint('translation', __name__)
 
 

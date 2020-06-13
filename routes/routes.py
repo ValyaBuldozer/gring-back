@@ -74,7 +74,7 @@ put_route_schema = {
                 'properties': {
                     'id': {'type': 'integer'},
                     'description': {'type': ['string', 'null']},
-                    'audioguide': {'type': ['string', 'null']}
+                    'audioguide_link': {'type': ['string', 'null']}
                 },
                 'required': ['id']
             },
@@ -119,12 +119,12 @@ def put_new_route():
             route_place_info.description_id = description_id
             route_place_info.description.set(locale_string)
 
-        if 'audioguide' in place_info:
+        if 'audioguide_link' in place_info:
             audioguide_link_id = str(uuid4())
             locale_link = LocaleLink(
                 id=audioguide_link_id,
                 locale=locale,
-                path=place_info['audioguide']
+                path=place_info['audioguide_link']
             )
             route_place_info.audioguide_link_id = audioguide_link_id
             route_place_info.audioguide_link.set(locale_link)
@@ -202,12 +202,12 @@ def post_route_by_id(route_id):
             route_place_info.description_id = description_id
             route_place_info.description.set(locale_string)
 
-        if 'audioguide' in place_info:
+        if 'audioguide_link' in place_info:
             audioguide_link_id = str(uuid4())
             locale_link = LocaleLink(
                 id=audioguide_link_id,
                 locale=locale,
-                path=place_info['audioguide']
+                path=place_info['audioguide_link']
             )
             route_place_info.audioguide_link_id = audioguide_link_id
             route_place_info.audioguide_link.set(locale_link)

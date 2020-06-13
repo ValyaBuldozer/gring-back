@@ -124,7 +124,7 @@ def post_category_by_id(category_id):
 
 @category_blueprint.route('/categories/<category_id>', methods=['DELETE'])
 @roles_required([RoleName.admin, RoleName.content_moder])
-def delete_place_by_id(category_id):
+def delete_category_by_id(category_id):
     session = get_session()
     category = session.query(Category).get(category_id)
 

@@ -20,6 +20,7 @@ from flask_expects_json import expects_json
 from util.decorators import roles_required
 from models.RoleName import RoleName
 
+
 public_place_blueptint = Blueprint('public_places', __name__)
 
 

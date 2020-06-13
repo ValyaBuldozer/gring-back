@@ -18,7 +18,9 @@ from flask_expects_json import expects_json
 from util import bcrypt_init
 from util.image_service import upload_image, delete_image
 
+
 admin_blueprint = Blueprint('admin', __name__)
+
 
 put_user_admin_schema = {
     'type': 'object',
