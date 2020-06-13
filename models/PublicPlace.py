@@ -30,7 +30,7 @@ class PublicPlace(Place):
     )
     avg_bill_id = db.Column(
         db.String(50),
-        db.ForeignKey("locale_string.string_id"),
+        db.ForeignKey("locale_string.string_id", ondelete="SET NULL"),
         name="public_place_avg_bill_id",
         nullable=True
     )
@@ -44,7 +44,7 @@ class PublicPlace(Place):
     )
     visit_cost_id = db.Column(
         db.String(50),
-        db.ForeignKey("locale_string.string_id"),
+        db.ForeignKey("locale_string.string_id", ondelete="SET NULL"),
         name="public_place_visit_cost_id",
         nullable=True
     )

@@ -64,16 +64,15 @@ def put_new_review(entity_id):
         return
 
     current_user_id = get_jwt_identity()
-    user = session.query(User).get(current_user_id)
 
     review = session.query(Review).filter(
-        Review.user_id == user.id,
+        Review.user_id == current_user_id,
         Review.entity_id == entity_id
     ).first()
 
     if review is not None:
         session.close()
-        abort(400, "User with id = %s already has a review for entity with id = %s" % (user.id, entity_id))
+        abort(400, "User with id = %s already has a review for entity with id = %s" % (current_user_id, entity_id))
         return
 
     text = None
@@ -112,12 +111,16 @@ def post_review(entity_id):
         return
 
     current_user_id = get_jwt_identity()
-    user = session.query(User).get(current_user_id)
 
     review = session.query(Review).filter(
-        Review.user_id == user.id,
+        Review.user_id == current_user_id,
         Review.entity_id == entity_id
     ).first()
+
+    if review is None:
+        session.close()
+        abort(400, "User with id = %s already has not a review for entity with id = %s" % (current_user_id, entity_id))
+        return
 
     content = g.data
     if 'text' in content:

@@ -49,7 +49,7 @@ class HistoricalPerson(Object):
     )
     patronymic_id = db.Column(
         db.String(36),
-        db.ForeignKey("locale_string.string_id"),
+        db.ForeignKey("locale_string.string_id", ondelete="SET NULL"),
         name="person_patronymic_id",
         nullable=True
     )
@@ -68,7 +68,8 @@ class HistoricalPerson(Object):
     )
     deathdate = db.Column(
         db.Date,
-        name="person_deathdate"
+        name="person_deathdate",
+        nullable=True
     )
     related_objects = relationship(
         "Object",

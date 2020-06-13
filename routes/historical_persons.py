@@ -3,6 +3,7 @@ from uuid import uuid4
 from flask import Blueprint, request, abort, g
 
 from models.Language import Language
+from models.LocaleLink import LocaleLink
 from models.LocaleString import LocaleString
 from util.audio_service import delete_audio
 from util.get_locale import validate_locale, get_locale, get_post_locale
@@ -80,11 +81,11 @@ put_historical_person_schema = {
         },
         'related_objects': {
             'type': 'array',
-            'item': {'type': 'integer'}
+            'item': {'type': 'integer'},
+            "minItems": 1
         },
     },
-    'required': ['image_link', 'description', 'city_id', 'name', 'second_name', 'birthdate', 'categories',
-                 'related_objects']
+    'required': ['image_link', 'description', 'city_id', 'name', 'second_name', 'birthdate', 'categories']
 }
 
 
@@ -114,26 +115,30 @@ def put_new_hisrorical_person():
 
         categories.append(category)
 
-    related_objects = []
-
-    for object_id in content['related_objects']:
-        obj = session.query(Object).get(object_id)
-
-        if obj is None:
-            session.close()
-            abort(400, "Related object with id = %s not found" % object_id)
-            return
-
-        related_objects.append(obj)
-
     historical_person = HistoricalPerson(
         image_link=content['image_link'],
         city_id=content['city_id'],
         birthdate=content['birthdate'],
-        deathdate=content['deathdate'],
         categories=categories,
-        related_objects=related_objects,
     )
+
+    if 'deathdate' in content:
+        historical_person.deathdate = content['deathdate']
+
+    related_objects = []
+
+    if 'related_objects' in content:
+        for object_id in content['related_objects']:
+            obj = session.query(Object).get(object_id)
+
+            if obj is None:
+                session.close()
+                abort(400, "Related object with id = %s not found" % object_id)
+                return
+
+            related_objects.append(obj)
+
+    historical_person.related_objects = related_objects
 
     name_id = str(uuid4())
     locale_string = LocaleString(
@@ -153,14 +158,15 @@ def put_new_hisrorical_person():
     historical_person.second_name_id = second_name_id
     historical_person.second_name.set(locale_string)
 
-    patronymic_id = str(uuid4())
-    locale_string = LocaleString(
-        id=patronymic_id,
-        locale=locale,
-        text=content['patronymic']
-    )
-    historical_person.patronymic_id = patronymic_id
-    historical_person.patronymic.set(locale_string)
+    if 'patronymic' in content:
+        patronymic_id = str(uuid4())
+        locale_string = LocaleString(
+            id=patronymic_id,
+            locale=locale,
+            text=content['patronymic']
+        )
+        historical_person.patronymic_id = patronymic_id
+        historical_person.patronymic.set(locale_string)
 
     description_id = str(uuid4())
     locale_string = LocaleString(
@@ -171,14 +177,15 @@ def put_new_hisrorical_person():
     historical_person.description_id = description_id
     historical_person.description.set(locale_string)
 
-    audioguide_link_id = str(uuid4())
-    locale_string = LocaleString(
-        id=audioguide_link_id,
-        locale=locale,
-        text=content['audioguide_link']
-    )
-    historical_person.audioguide_link_id = audioguide_link_id
-    historical_person.audioguide_link.set(locale_string)
+    if 'audioguide_link' in content:
+        audioguide_link_id = str(uuid4())
+        locale_link = LocaleLink(
+            id=audioguide_link_id,
+            locale=locale,
+            path=content['audioguide_link']
+        )
+        historical_person.audioguide_link_id = audioguide_link_id
+        historical_person.audioguide_link.set(locale_link)
 
     session.add(historical_person)
 
@@ -209,10 +216,11 @@ def post_hisrorical_person_by_id(object_id):
         return
 
     historical_person.image_link = content['image_link']
-    historical_person.audioguide_link = content['audioguide_link']
     historical_person.city_id = content['city_id']
     historical_person.birthdate = content['birthdate']
-    historical_person.deathdate = content['deathdate']
+
+    if 'deathdate' in content:
+        historical_person.deathdate = content['deathdate']
 
     historical_person.name.set(LocaleString(
         id=historical_person.name_id,
@@ -227,17 +235,52 @@ def post_hisrorical_person_by_id(object_id):
     ))
 
     if 'patronymic' in content:
-        historical_person.patronymic.set(LocaleString(
-            id=historical_person.patronymic_id,
-            locale=locale,
-            text=content['patronymic']
-        ))
+        if historical_person.patronymic_id is not None:
+            historical_person.patronymic.set(LocaleString(
+                id=historical_person.patronymic_id,
+                locale=locale,
+                text=content['patronymic']
+            ))
+        else:
+            patronymic_id = str(uuid4())
+            locale_string = LocaleString(
+                id=patronymic_id,
+                locale=locale,
+                text=content['patronymic']
+            )
+            historical_person.patronymic_id = patronymic_id
+            historical_person.patronymic.set(locale_string)
+    else:
+        if historical_person.patronymic_id is not None:
+            locale_string = session.query(LocaleString).filter(
+                LocaleString.id == historical_person.patronymic_id,
+                LocaleString.locale == locale
+            ).first()
+            session.delete(locale_string)
 
-    historical_person.audioguide_link.set(LocaleString(
-        id=historical_person.audioguide_link_id,
-        locale=locale,
-        text=content['audioguide_link']
-    ))
+    if 'audioguide_link' in content:
+        if historical_person.audioguide_link_id is not None:
+            historical_person.audioguide_link.set(LocaleLink(
+                id=historical_person.audioguide_link_id,
+                locale=locale,
+                path=content['audioguide_link']
+            ))
+        else:
+            audioguide_link_id = str(uuid4())
+            locale_link = LocaleLink(
+                id=audioguide_link_id,
+                locale=locale,
+                path=content['audioguide_link']
+            )
+            historical_person.audioguide_link_id = audioguide_link_id
+            historical_person.audioguide_link.set(locale_link)
+    else:
+        if historical_person.audioguide_link_id is not None:
+            locale_link = session.query(LocaleLink).filter(
+                LocaleLink.id == historical_person.audioguide_link_id,
+                LocaleLink.locale == locale
+            ).first()
+            session.delete(locale_link)
 
     historical_person.description.set(LocaleString(
         id=historical_person.description_id,
@@ -261,15 +304,16 @@ def post_hisrorical_person_by_id(object_id):
 
     related_objects = []
 
-    for object_id in content['related_objects']:
-        obj = session.query(Object).get(object_id)
+    if 'related_objects' in content:
+        for object_id in content['related_objects']:
+            obj = session.query(Object).get(object_id)
 
-        if obj is None:
-            session.close()
-            abort(400, "Related object with id = %s not found" % object_id)
-            return
+            if obj is None:
+                session.close()
+                abort(400, "Related object with id = %s not found" % object_id)
+                return
 
-        related_objects.append(obj)
+            related_objects.append(obj)
 
     historical_person.related_objects = related_objects
 

@@ -29,7 +29,7 @@ class Object(Entity):
     )
     audioguide_link_id = db.Column(
         db.String(36),
-        db.ForeignKey("locale_link.link_id"),
+        db.ForeignKey("locale_link.link_id", ondelete="SET NULL"),
         name="object_audioguide_link_id",
         nullable=True
     )

@@ -3,6 +3,7 @@ from uuid import uuid4
 from flask import Blueprint, request, abort, g
 
 from models.Language import Language
+from models.LocaleLink import LocaleLink
 from models.LocaleString import LocaleString
 from util.audio_service import delete_audio
 from util.get_locale import validate_locale, get_locale, get_post_locale
@@ -144,14 +145,15 @@ def put_new_place():
     place.address_id = address_id
     place.address.set(locale_string)
 
-    audioguide_link_id = str(uuid4())
-    locale_string = LocaleString(
-        id=audioguide_link_id,
-        locale=locale,
-        text=content['audioguide_link']
-    )
-    place.audioguide_link_id = audioguide_link_id
-    place.audioguide_link.set(locale_string)
+    if 'audioguide_link' in content:
+        audioguide_link_id = str(uuid4())
+        locale_link = LocaleLink(
+            id=audioguide_link_id,
+            locale=locale,
+            path=content['audioguide_link']
+        )
+        place.audioguide_link_id = audioguide_link_id
+        place.audioguide_link.set(locale_link)
 
     session.add(place)
 
@@ -206,11 +208,29 @@ def post_place_by_id(object_id):
         text=content['address']
     ))
 
-    place.audioguide_link.set(LocaleString(
-        id=place.audioguide_link_id,
-        locale=locale,
-        text=content['audioguide_link']
-    ))
+    if 'audioguide_link' in content:
+        if place.audioguide_link_id is not None:
+            place.audioguide_link.set(LocaleLink(
+                id=place.audioguide_link_id,
+                locale=locale,
+                path=content['audioguide_link']
+            ))
+        else:
+            audioguide_link_id = str(uuid4())
+            locale_link = LocaleLink(
+                id=audioguide_link_id,
+                locale=locale,
+                path=content['audioguide_link']
+            )
+            place.audioguide_link_id = audioguide_link_id
+            place.audioguide_link.set(locale_link)
+    else:
+        if place.audioguide_link_id is not None:
+            locale_link = session.query(LocaleLink).filter(
+                LocaleLink.id == place.audioguide_link_id,
+                LocaleLink.locale == locale
+            ).first()
+            session.delete(locale_link)
 
     categories = []
 

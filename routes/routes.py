@@ -3,6 +3,7 @@ from uuid import uuid4
 from flask import Blueprint, request, abort, g
 
 from models.Language import Language
+from models.LocaleLink import LocaleLink
 from models.LocaleString import LocaleString
 from util.get_locale import validate_locale, get_locale, get_post_locale
 from util.json import convert_to_json, returns_json
@@ -76,8 +77,10 @@ put_route_schema = {
                     'audioguide': {'type': ['string', 'null']}
                 },
                 'required': ['id']
-            }
-        }
+            },
+            "minItems": 1
+        },
+        'city_id': {'type': 'integer'}
     },
     'required': ['name', 'description', 'places']
 }
@@ -100,15 +103,37 @@ def put_new_route():
             abort(400, "Place with id = %s not found" % (place_info['id']))
             return
 
-        places.append(RoutePlaceInfo(
+        route_place_info = RoutePlaceInfo(
             place_id=place_info['id'],
-            description=place_info.get('description', None),
             order=index,
-            audioguide=place_info.get('audioguide', None)
-        ))
+        )
+
+        if 'description' in place_info:
+            description_id = str(uuid4())
+            locale_string = LocaleString(
+                id=description_id,
+                locale=locale,
+                text=place_info['description']
+            )
+
+            route_place_info.description_id = description_id
+            route_place_info.description.set(locale_string)
+
+        if 'audioguide' in place_info:
+            audioguide_link_id = str(uuid4())
+            locale_link = LocaleLink(
+                id=audioguide_link_id,
+                locale=locale,
+                path=place_info['audioguide']
+            )
+            route_place_info.audioguide_link_id = audioguide_link_id
+            route_place_info.audioguide_link.set(locale_link)
+
+        places.append(route_place_info)
 
     route = Route(
-        places=places
+        places=places,
+        city_id=content['city_id']
     )
 
     name_id = str(uuid4())
@@ -142,8 +167,8 @@ def put_new_route():
 @roles_required([RoleName.admin, RoleName.content_moder])
 def post_route_by_id(route_id):
     session = get_session()
-    route = session.query(Route).get(route_id)
 
+    route = session.query(Route).get(route_id)
     locale = get_post_locale(session)
 
     if route is None:
@@ -161,14 +186,36 @@ def post_route_by_id(route_id):
             abort(400, "Place with id = %s not found" % (place_info['id']))
             return
 
-        places.append(RoutePlaceInfo(
+        route_place_info = RoutePlaceInfo(
             place_id=place_info['id'],
-            description=place_info.get('description', None),
             order=index,
-            audioguide=place_info.get('audioguide', None)
-        ))
+        )
+
+        if 'description' in place_info:
+            description_id = str(uuid4())
+            locale_string = LocaleString(
+                id=description_id,
+                locale=locale,
+                text=place_info['description']
+            )
+
+            route_place_info.description_id = description_id
+            route_place_info.description.set(locale_string)
+
+        if 'audioguide' in place_info:
+            audioguide_link_id = str(uuid4())
+            locale_link = LocaleLink(
+                id=audioguide_link_id,
+                locale=locale,
+                path=place_info['audioguide']
+            )
+            route_place_info.audioguide_link_id = audioguide_link_id
+            route_place_info.audioguide_link.set(locale_link)
+
+        places.append(route_place_info)
 
     route.places = places
+    route.city_id = content['city_id']
 
     route.name.set(LocaleString(
         id=route.name_id,

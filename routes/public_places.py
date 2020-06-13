@@ -3,6 +3,7 @@ from uuid import uuid4
 from flask import Blueprint, request, abort, g
 
 from models.Language import Language
+from models.LocaleLink import LocaleLink
 from models.LocaleString import LocaleString
 from util.audio_service import delete_audio
 from util.get_locale import validate_locale, get_locale, get_post_locale
@@ -18,7 +19,6 @@ from models.base import get_session
 from flask_expects_json import expects_json
 from util.decorators import roles_required
 from models.RoleName import RoleName
-
 
 public_place_blueptint = Blueprint('public_places', __name__)
 
@@ -144,12 +144,16 @@ def put_new_public_place():
     public_place = PublicPlace(
         image_link=content['image_link'],
         city_id=content['city_id'],
-        phone_number=content['phone_number'],
-        site=content['site'],
         geolocation=geolocation,
         categories=categories,
         timetable=timetable
     )
+
+    if 'phone_number' in content:
+        public_place.phone_number = content['phone_number']
+
+    if 'site' in content:
+        public_place.site = content['site']
 
     name_id = str(uuid4())
     locale_string = LocaleString(
@@ -178,32 +182,35 @@ def put_new_public_place():
     public_place.address_id = address_id
     public_place.address.set(locale_string)
 
-    audioguide_link_id = str(uuid4())
-    locale_string = LocaleString(
-        id=audioguide_link_id,
-        locale=locale,
-        text=content['audioguide_link']
-    )
-    public_place.audioguide_link_id = audioguide_link_id
-    public_place.audioguide_link.set(locale_string)
+    if 'audioguide_link' in content:
+        audioguide_link_id = str(uuid4())
+        locale_link = LocaleLink(
+            id=audioguide_link_id,
+            locale=locale,
+            path=content['audioguide_link']
+        )
+        public_place.audioguide_link_id = audioguide_link_id
+        public_place.audioguide_link.set(locale_link)
 
-    avg_bill_id = str(uuid4())
-    locale_string = LocaleString(
-        id=avg_bill_id,
-        locale=locale,
-        text=content['avg_bill']
-    )
-    public_place.avg_bill_id = avg_bill_id
-    public_place.avg_bill.set(locale_string)
+    if 'avg_bill' in content:
+        avg_bill_id = str(uuid4())
+        locale_string = LocaleString(
+            id=avg_bill_id,
+            locale=locale,
+            text=content['avg_bill']
+        )
+        public_place.avg_bill_id = avg_bill_id
+        public_place.avg_bill.set(locale_string)
 
-    visit_cost_id = str(uuid4())
-    locale_string = LocaleString(
-        id=visit_cost_id,
-        locale=locale,
-        text=content['visit_cost']
-    )
-    public_place.visit_cost_id = visit_cost_id
-    public_place.visit_cost.set(locale_string)
+    if 'visit_cost' in content:
+        visit_cost_id = str(uuid4())
+        locale_string = LocaleString(
+            id=visit_cost_id,
+            locale=locale,
+            text=content['visit_cost']
+        )
+        public_place.visit_cost_id = visit_cost_id
+        public_place.visit_cost.set(locale_string)
 
     session.add(public_place)
 
@@ -260,23 +267,77 @@ def post_public_place_by_id(object_id):
         text=content['address']
     ))
 
-    public_place.audioguide_link.set(LocaleString(
-        id=public_place.audioguide_link_id,
-        locale=locale,
-        text=content['audioguide_link']
-    ))
+    if 'audioguide_link' in content:
+        if public_place.audioguide_link_id is not None:
+            public_place.audioguide_link.set(LocaleLink(
+                id=public_place.audioguide_link_id,
+                locale=locale,
+                path=content['audioguide_link']
+            ))
+        else:
+            audioguide_link_id = str(uuid4())
+            locale_link = LocaleLink(
+                id=audioguide_link_id,
+                locale=locale,
+                path=content['audioguide_link']
+            )
+            public_place.audioguide_link_id = audioguide_link_id
+            public_place.audioguide_link.set(locale_link)
+    else:
+        if public_place.audioguide_link_id is not None:
+            locale_link = session.query(LocaleLink).filter(
+                LocaleLink.id == public_place.audioguide_link_id,
+                LocaleLink.locale == locale
+            ).first()
+            session.delete(locale_link)
 
-    public_place.avg_bill.set(LocaleString(
-        id=public_place.avg_bill_id,
-        locale=locale,
-        text=content['avg_bill']
-    ))
+    if 'avg_bill' in content:
+        if public_place.avg_bill_id is not None:
+            public_place.avg_bill.set(LocaleString(
+                id=public_place.avg_bill_id,
+                locale=locale,
+                text=content['avg_bill']
+            ))
+        else:
+            avg_bill_id = str(uuid4())
+            locale_string = LocaleString(
+                id=avg_bill_id,
+                locale=locale,
+                text=content['avg_bill']
+            )
+            public_place.avg_bill_id = avg_bill_id
+            public_place.avg_bill.set(locale_string)
+    else:
+        if public_place.avg_bill_id is not None:
+            locale_string = session.query(LocaleString).filter(
+                LocaleString.id == public_place.avg_bill_id,
+                LocaleString.locale == locale
+            ).first()
+            session.delete(locale_string)
 
-    public_place.visit_cost.set(LocaleString(
-        id=public_place.visit_cost_id,
-        locale=locale,
-        text=content['visit_cost']
-    ))
+    if 'visit_cost' in content:
+        if public_place.visit_cost_id is not None:
+            public_place.visit_cost.set(LocaleString(
+                id=public_place.visit_cost_id,
+                locale=locale,
+                text=content['visit_cost']
+            ))
+        else:
+            visit_cost_id = str(uuid4())
+            locale_string = LocaleString(
+                id=visit_cost_id,
+                locale=locale,
+                text=content['visit_cost']
+            )
+            public_place.visit_cost_id = visit_cost_id
+            public_place.visit_cost.set(locale_string)
+    else:
+        if public_place.visit_cost_id is not None:
+            locale_string = session.query(LocaleString).filter(
+                LocaleString.id == public_place.visit_cost_id,
+                LocaleString.locale == locale
+            ).first()
+            session.delete(locale_string)
 
     categories = []
 
@@ -334,6 +395,3 @@ def delete_public_place_by_id(object_id):
     session.close()
 
     return 'ok'
-
-
-

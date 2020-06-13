@@ -8,6 +8,8 @@ from sqlalchemy.orm import relationship
 
 
 class RoutePlaceInfo(db.Model):
+
+    __tablename__ = "route_place_info"
     place_id = db.Column(
         db.Integer,
         db.ForeignKey("place.object_id"),
@@ -35,7 +37,7 @@ class RoutePlaceInfo(db.Model):
     )
     description_id = db.Column(
         db.String(36),
-        db.ForeignKey("locale_string.string_id"),
+        db.ForeignKey("locale_string.string_id", ondelete="SET NULL"),
         name="route_place_description_id",
         nullable=True
     )
@@ -49,7 +51,7 @@ class RoutePlaceInfo(db.Model):
     )
     audioguide_link_id = db.Column(
         db.String(36),
-        db.ForeignKey("locale_link.link_id"),
+        db.ForeignKey("locale_link.link_id", ondelete="SET NULL"),
         name="route_place_audioguide_link_id",
         nullable=True
     )

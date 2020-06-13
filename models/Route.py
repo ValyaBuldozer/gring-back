@@ -100,7 +100,7 @@ class Route(Entity):
             geo_point = [geolocation.longitude, geolocation.latitude]
             geo_points.append(geo_point)
 
-        if len(geo_points) > 0:
+        if len(geo_points) > 1:
             response = osrm_client.client.route(
                 coordinates=geo_points,
                 overview=osrm.overview.full)
