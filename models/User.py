@@ -6,7 +6,7 @@ from models.Role import Role
 from models.base import db
 from models.UserFavorite import UserFavorite
 from sqlalchemy.orm import relationship
-from models.base import get_session
+from util import bcrypt_init
 
 
 class User(db.Model):
@@ -65,6 +65,14 @@ class User(db.Model):
         order_by=desc(UserVisitedPlace.c.add_time),
         backref=db.backref('user_visited_places')
     )
+
+    def set_password(self, password):
+        """Set password."""
+        self.password = bcrypt_init.bcrypt.generate_password_hash(password)
+
+    def check_password(self, value):
+        """Check password."""
+        return bcrypt_init.bcrypt.check_password_hash(self.password, value)
 
     def can(self, allowed_roles):
         user_role_ids = []

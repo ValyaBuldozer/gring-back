@@ -15,8 +15,8 @@ from util.decorators import roles_required
 from util.current_user import get_current_user
 from models.Role import Role
 from flask_expects_json import expects_json
-from util import bcrypt_init
 from util.image_service import upload_image, delete_image
+from email.utils import parseaddr
 
 
 admin_blueprint = Blueprint('admin', __name__)
@@ -69,10 +69,14 @@ def admin_register_new_user():
         abort(400, "User with name = %s already exist" % username)
         return
 
-    usermail = content['email']
-    if any(user.email == usermail for user in users):
+    email = content['email']
+    if '@' not in parseaddr(email)[1]:
         session.close()
-        abort(400, "User with email = %s already exist" % usermail)
+        abort(400, "Invalid email")
+        return
+    if any(user.email == email for user in users):
+        session.close()
+        abort(400, "User with email = %s already exist" % email)
         return
 
     roles = []
@@ -100,13 +104,16 @@ def admin_register_new_user():
     else:
         image = get_default_avatar(username)
 
-    session.add(User(
-        name=content['username'],
-        password=bcrypt_init.bcrypt.generate_password_hash(content['password']),
-        email=content['email'],
+    user = User(
+        name=username,
+        email=email,
         roles=roles,
         image=image
-    ))
+    )
+
+    user.set_password(content['password'])
+
+    session.add(user)
 
     session.commit()
     session.close()
@@ -153,12 +160,17 @@ def admin_update_user(user_id):
             user.name = content['username']
 
     if 'email' in content:
-        if any(user.email == content['email'] for user in users):
+        email = content['email']
+        if '@' not in parseaddr(email)[1]:
             session.close()
-            abort(400, "User with email = %s already exist" % content['email'])
+            abort(400, "Invalid email")
+            return
+        if any(user.email == email for user in users):
+            session.close()
+            abort(400, "User with email = %s already exist" % email)
             return
         else:
-            user.email = content['email']
+            user.email = email
 
     if 'roles' in content:
         roles = []
@@ -175,7 +187,7 @@ def admin_update_user(user_id):
         user.roles = roles
 
     if 'password' in content:
-        user.password = bcrypt_init.bcrypt.generate_password_hash(content['password'])
+        user.set_password(content['password'])
 
     if 'image' in content:
         user.image = content['image']

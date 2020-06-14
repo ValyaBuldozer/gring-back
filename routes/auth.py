@@ -9,7 +9,6 @@ from flask_jwt_extended import (
 )
 from models.User import User
 from models.base import get_session
-from util import bcrypt_init
 from flask import current_app
 from flask_expects_json import expects_json
 
@@ -50,7 +49,7 @@ def login():
         abort(403, 'User has been banned')
         return
 
-    if not bcrypt_init.bcrypt.check_password_hash(user.password, password):
+    if not user.check_password(password):
         abort(400, 'Invalid password')
         return
 

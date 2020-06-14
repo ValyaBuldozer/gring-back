@@ -1,6 +1,6 @@
 from models.Object import Object
 from models.Category import Category
-from flask import Blueprint, request, abort
+from flask import Blueprint, request, abort, current_app
 from util.json import convert_to_json, returns_json
 from models.base import get_session
 from util.get_locale import validate_locale, get_locale

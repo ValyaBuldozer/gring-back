@@ -15,7 +15,6 @@ from util.decorators import roles_required
 from util.current_user import get_current_user
 from models.Role import Role
 from flask_expects_json import expects_json
-from util import bcrypt_init
 from email.utils import parseaddr
 
 from util.image_service import upload_image, delete_image
@@ -77,14 +76,13 @@ def basic_register_new_user():
         return
 
     email = content['email']
-    if any(user.email == email for user in users):
-        session.close()
-        abort(409, "User with email = %s already exist" % email)
-        return
-
     if '@' not in parseaddr(email)[1]:
         session.close()
         abort(400, "Invalid email")
+        return
+    if any(user.email == email for user in users):
+        session.close()
+        abort(409, "User with email = %s already exist" % email)
         return
 
     roles = [session.query(Role).filter(
@@ -96,13 +94,16 @@ def basic_register_new_user():
     else:
         image = get_default_avatar(username)
 
-    session.add(User(
+    user = User(
         name=username,
-        password=bcrypt_init.bcrypt.generate_password_hash(content['password']),
         email=email,
         roles=roles,
         image=image
-    ))
+    )
+
+    user.set_password(content['password'])
+
+    session.add(user)
 
     session.commit()
     session.close()
@@ -137,15 +138,20 @@ def basic_update_user():
             user.name = content['username']
 
     if 'email' in content:
-        if any(user.email == content['email'] for user in users):
+        email = content['email']
+        if '@' not in parseaddr(email)[1]:
             session.close()
-            abort(409, "User with email = %s already exist" % content['email'])
+            abort(400, "Invalid email")
+            return
+        if any(user.email == email for user in users):
+            session.close()
+            abort(409, "User with email = %s already exist" % email)
             return
         else:
-            user.email = content['email']
+            user.email = email
 
     if 'password' in content:
-        user.password = bcrypt_init.bcrypt.generate_password_hash(content['password'])
+        user.set_password(content['password'])
 
     if 'image' in content:
         user.image = content['image']
