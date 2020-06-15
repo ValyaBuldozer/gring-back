@@ -343,7 +343,7 @@ def delete_all_user_reviews(user_id):
         abort(400, "Reviews which belongs to user with id = %s cannot be deleted" % user_id)
         return
 
-    reviews = session.query(Review).filter(
+    session.query(Review).filter(
         Review.user_id == user_id,
     ).delete()
 
