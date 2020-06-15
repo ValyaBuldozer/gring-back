@@ -92,7 +92,7 @@ put_historical_person_schema = {
 @historical_person_blueptint.route('/historical_persons', methods=['PUT'])
 @expects_json(put_historical_person_schema)
 @roles_required([RoleName.admin, RoleName.content_moder])
-def put_new_hisrorical_person():
+def put_new_historical_person():
     content = g.data
     session = get_session()
 
@@ -129,7 +129,8 @@ def put_new_hisrorical_person():
 
     if 'related_objects' in content:
         for object_id in content['related_objects']:
-            obj = session.query(Object).get(object_id)
+            with session.no_autoflush:
+                obj = session.query(Object).get(object_id)
 
             if obj is None:
                 session.close()
@@ -198,7 +199,7 @@ def put_new_hisrorical_person():
 @historical_person_blueptint.route('/historical_persons/<object_id>', methods=['POST'])
 @expects_json(put_historical_person_schema)
 @roles_required([RoleName.admin, RoleName.content_moder])
-def post_hisrorical_person_by_id(object_id):
+def post_historical_person_by_id(object_id):
     session = get_session()
     content = g.data
 

@@ -162,6 +162,29 @@ def basic_update_user():
     return 'ok'
 
 
+@user_blueprint.route('/user/<user_id>', methods=['DELETE'])
+@roles_required([RoleName.admin, RoleName.user_moder])
+def delete_user_by_id(user_id):
+    session = get_session()
+    user = session.query(User).get(user_id)
+
+    if user is None:
+        session.close()
+        abort(404, "User with id = %s not found" % user_id)
+        return
+
+    if user.is_admin():
+        session.close()
+        abort(400, "User with id = %s cannot be deleted" % user_id)
+        return
+
+    session.delete(user)
+    session.commit()
+    session.close()
+
+    return 'ok'
+
+
 @user_blueprint.route('/user/favorite', methods=['GET'])
 @roles_required([RoleName.user])
 @returns_json

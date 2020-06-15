@@ -8,7 +8,7 @@ class Review(db.Model):
     __tablename__ = "review"
     user_id = db.Column(
         db.Integer,
-        db.ForeignKey("user.user_id"),
+        db.ForeignKey("user.user_id", ondelete="cascade"),
         primary_key=True,
         name="user_id",
         nullable=False
@@ -18,7 +18,7 @@ class Review(db.Model):
     )
     entity_id = db.Column(
         db.Integer,
-        db.ForeignKey("entity.entity_id"),
+        db.ForeignKey("entity.entity_id", ondelete="cascade"),
         primary_key=True,
         name="entity_id",
         nullable=False
