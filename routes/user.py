@@ -162,8 +162,6 @@ def basic_update_user():
     return 'ok'
 
 
-@user_blueprint.route('/user/<user_id>', methods=['DELETE'])
-@roles_required([RoleName.admin, RoleName.user_moder])
 def delete_user_by_id(user_id):
     session = get_session()
     user = session.query(User).get(user_id)

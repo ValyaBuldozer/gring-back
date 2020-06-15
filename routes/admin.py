@@ -210,12 +210,12 @@ def admin_delete_avatar_by_user_id(user_id):
 
     if user.is_admin() and not user.id == author.id:
         session.close()
-        abort(404, "Avatar which belongs to the user with id = %s cannot be deleted" % user_id)
+        abort(404, "Avatar which belongs to user with id = %s cannot be deleted" % user_id)
         return
 
     if user.is_moder() and not author.is_admin() and not user.id == author.id:
         session.close()
-        abort(403, "Not enough rights to delete avatar which belongs to the user with id = %s" % user_id)
+        abort(403, "Not enough rights to delete avatar which belongs to user with id = %s" % user_id)
         return
 
     if user.image is not None:
@@ -255,12 +255,12 @@ def delete_user_review():
 
     if user.is_admin() and not user.id == author.id:
         session.close()
-        abort(404, "Review which belongs to the user with id = %s cannot be deleted" % user_id)
+        abort(404, "Review which belongs to user with id = %s cannot be deleted" % user_id)
         return
 
     if user.is_moder() and not author.is_admin() and not user.id == author.id:
         session.close()
-        abort(403, "Not enough rights to delete review which belongs to the user with id = %s" % user_id)
+        abort(403, "Not enough rights to delete review which belongs to user with id = %s" % user_id)
         return
 
     entity_id = content['entity_id']
@@ -321,6 +321,31 @@ def unblock_user_by_id(user_id):
         return
 
     user.is_active = True
+
+    session.commit()
+    session.close()
+
+    return 'ok'
+
+
+@admin_blueprint.route('/admin/reviews/<user_id>', methods=['DELETE'])
+@roles_required([RoleName.admin, RoleName.user_moder])
+def delete_all_user_reviews(user_id):
+    session = get_session()
+
+    user = session.query(User).get(user_id)
+    if user is None:
+        session.close()
+        abort(404, "User with id = %s not found" % user_id)
+
+    if user.is_admin():
+        session.close()
+        abort(400, "Reviews which belongs to user with id = %s cannot be deleted" % user_id)
+        return
+
+    reviews = session.query(Review).filter(
+        Review.user_id == user_id,
+    ).delete()
 
     session.commit()
     session.close()
