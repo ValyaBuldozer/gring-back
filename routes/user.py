@@ -2,8 +2,11 @@ import os
 from uuid import uuid4
 from flask import Blueprint, g, request, abort, jsonify, current_app
 from flask_avatars import Identicon
+from sqlalchemy import desc
+
 from models.Entity import Entity
 from models.Place import Place
+from models.Review import Review
 from util.avatars_init import get_default_avatar
 from util.get_locale import validate_locale, get_locale
 from util.json import convert_to_json, returns_json
@@ -183,10 +186,30 @@ def delete_user_by_id(user_id):
     return 'ok'
 
 
-@user_blueprint.route('/user/favorite', methods=['GET'])
+@user_blueprint.route('/user/reviews', methods=['GET'])
 @roles_required([RoleName.user])
 @returns_json
-def get_user_favorite_by_id():
+def get_user_reviews_by_id():
+    limit = request.args.get('limit')
+
+    session = get_session()
+    current_user_id = get_jwt_identity()
+
+    reviews = session.query(Review).filter(
+        Review.user_id == current_user_id
+    ).order_by(desc(Review.time)).limit(limit).all()
+
+    json_reviews = convert_to_json(reviews)
+
+    session.close()
+
+    return json_reviews
+
+
+@user_blueprint.route('/user/favorites', methods=['GET'])
+@roles_required([RoleName.user])
+@returns_json
+def get_user_favorites_by_id():
     session = get_session()
 
     current_user_id = get_jwt_identity()
@@ -211,7 +234,7 @@ put_favorite_schema = {
 }
 
 
-@user_blueprint.route('/user/favorite', methods=['POST'])
+@user_blueprint.route('/user/favorites', methods=['POST'])
 @expects_json(put_favorite_schema)
 @roles_required([RoleName.user])
 def add_new_favorite():
@@ -242,7 +265,7 @@ def add_new_favorite():
     return 'ok'
 
 
-@user_blueprint.route('/user/favorite/<entity_id>', methods=['DELETE'])
+@user_blueprint.route('/user/favorites/<entity_id>', methods=['DELETE'])
 @roles_required([RoleName.user])
 def delete_favorite(entity_id):
     session = get_session()
