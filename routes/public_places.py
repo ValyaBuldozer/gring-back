@@ -385,8 +385,8 @@ def delete_public_place_by_id(object_id):
     if public_place.image_link is not None:
         delete_image(public_place.image_link)
 
-    for lang in Language.__members__:
-        audio = public_place.audioguide_link.get(Language[lang])
+    for lang in Language:
+        audio = public_place.audioguide_link.get(lang)
         if audio is not None:
             delete_audio(audio.path)
 

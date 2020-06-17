@@ -337,8 +337,8 @@ def delete_historical_person_by_id(object_id):
     if historical_person.image_link is not None:
         delete_image(historical_person.image_link)
 
-    for lang in Language.__members__:
-        audio = historical_person.audioguide_link.get(Language[lang])
+    for lang in Language:
+        audio = historical_person.audioguide_link.get(lang)
         if audio is not None:
             delete_audio(audio.path)
 
