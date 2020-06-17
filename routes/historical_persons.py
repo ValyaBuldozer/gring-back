@@ -338,9 +338,9 @@ def delete_historical_person_by_id(object_id):
         delete_image(historical_person.image_link)
 
     for lang in Language.__members__:
-        audio = historical_person.audioguide_link.get(lang)
+        audio = historical_person.audioguide_link.get(Language[lang])
         if audio is not None:
-            delete_audio(audio)
+            delete_audio(audio.path)
 
     session.delete(historical_person)
 

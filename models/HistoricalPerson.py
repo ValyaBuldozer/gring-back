@@ -5,7 +5,7 @@ from models.base import db
 from sqlalchemy.orm import relationship
 from models.EntityType import EntityType
 from models.Object import Object
-from models.HistoricalPersonRelatedObjects import HistoricalPersonRelatedObjects
+from models.HistoricalPersonRelatedObject import HistoricalPersonRelatedObject
 from models.LocaleString import LocaleString
 
 
@@ -73,7 +73,7 @@ class HistoricalPerson(Object):
     )
     related_objects = relationship(
         "Object",
-        secondary=HistoricalPersonRelatedObjects,
+        secondary=HistoricalPersonRelatedObject,
         single_parent=True,
         backref=db.backref('historical_person')
     )

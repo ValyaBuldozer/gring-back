@@ -17,7 +17,7 @@ from models.Place import Place
 from models.PublicPlace import PublicPlace
 from models.Timetable import Timetable
 from models.HistoricalPerson import HistoricalPerson
-from models.HistoricalPersonRelatedObjects import HistoricalPersonRelatedObjects
+from models.HistoricalPersonRelatedObject import HistoricalPersonRelatedObject
 from models.Route import Route
 from models.RoutePlaceInfo import RoutePlaceInfo
 from models.User import User

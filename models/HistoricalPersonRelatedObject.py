@@ -1,8 +1,8 @@
 from models.base import db
 
 
-HistoricalPersonRelatedObjects = db.Table(
-    "historical_person_related_objects",
+HistoricalPersonRelatedObject = db.Table(
+    "historical_person_related_object",
     db.metadata,
     db.Column(
         "historical_person_id",
