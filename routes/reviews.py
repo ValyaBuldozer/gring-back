@@ -125,6 +125,10 @@ def post_review(entity_id):
     content = g.data
     if 'text' in content:
         text = content['text']
+
+        if text != review.text:
+            review.time = datetime.now()
+
         language = translation_init.translate.detect(text)
         review.text = text
         review.locale = language

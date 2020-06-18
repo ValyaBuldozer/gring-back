@@ -33,7 +33,7 @@ class Review(db.Model):
     )
     time = db.Column(
         db.DateTime,
-        name="review_time",
+        name="review_last_modified_time",
         default=datetime.datetime.utcnow,
         nullable=False
     )

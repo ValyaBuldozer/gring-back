@@ -29,13 +29,13 @@ def upgrade():
     conn = op.get_bind()
     query = 'select {0} from {1}'.format('historical_person_id, object_id', 'historical_person_related_objects')
     res = conn.execute(query)
-    locale_update = []
+    update = []
     for columns in res:
-        locale_update.append({
+        update.append({
             'historical_person_id': columns[0],
             'object_id': columns[1],
         })
-    op.bulk_insert(HistoricalPersonRelatedObject, locale_update)
+    op.bulk_insert(HistoricalPersonRelatedObject, update)
 
     op.drop_table('historical_person_related_objects')
     # ### end Alembic commands ###
