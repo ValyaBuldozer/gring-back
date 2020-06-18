@@ -19,6 +19,7 @@ Flask-Migrate = "*"
 flask-bcrypt = "*"
 yandex.translate = "*"
 flask-avatars = "*"
+locust = "*"
 
 [requires]
 python_version = "3.6"
