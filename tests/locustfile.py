@@ -9,11 +9,20 @@ class FlowException(Exception):
 
 
 class GringApi(TaskSet):
+    def get_categories(self):
+        self.client.get("/api/categories")
+
     def get_objects(self):
         self.client.get("/api/objects")
 
     def get_object(self, object_id):
         self.client.get(f"/api/objects/{object_id}", name="/api/objects/[id]")
+
+    def get_routes(self):
+        self.client.get("/api/routes")
+
+    def get_route(self, object_id):
+        self.client.get(f"/api/routes/{object_id}", name="/api/routes/[id]")
 
     def get_reviews(self, entity_id):
         self.client.get(f"/api/reviews?object={entity_id}", name="/api/reviews/[id]")
@@ -35,17 +44,28 @@ class GringApi(TaskSet):
 
 
 class UnregisteredUserBehavior(GringApi):
-    @task(1)
+    @task(5)
     def view_object(self):
         item_id = randint(1, 23)
         self.get_object(item_id)
         self.get_reviews(item_id)
 
-    @task(2)
+    @task(10)
     def view_objects(self):
         self.get_objects()
 
+    @task(1)
+    def view_route(self):
+        item_id = randint(31, 33)
+        self.get_route(item_id)
+        self.get_reviews(item_id)
+
+    @task(2)
+    def view_routes(self):
+        self.get_routes()
+
     def on_start(self):
+        self.get_categories()
         self.get_objects()
 
 
@@ -69,10 +89,21 @@ class NormalUserBehavior(GringApi):
     def view_objects(self):
         self.get_objects()
 
+    @task(1)
+    def view_route(self):
+        item_id = randint(31, 33)
+        self.get_route(item_id)
+        self.get_reviews(item_id)
+
+    @task(2)
+    def view_routes(self):
+        self.get_routes()
+
     def on_start(self):
         item_id = randint(1, 5)
         username = "test" + str(item_id)
         self.login(username)
+        self.get_categories()
         self.get_objects()
 
 
@@ -96,10 +127,21 @@ class ActiveUserBehavior(GringApi):
     def view_objects(self):
         self.get_objects()
 
+    @task(1)
+    def view_route(self):
+        item_id = randint(31, 33)
+        self.get_route(item_id)
+        self.get_reviews(item_id)
+
+    @task(2)
+    def view_routes(self):
+        self.get_routes()
+
     def on_start(self):
         item_id = randint(1, 5)
         username = "test" + str(item_id)
         self.login(username)
+        self.get_categories()
         self.get_objects()
 
 
@@ -117,7 +159,7 @@ class NormalUserLocust(HttpUser):
 
 class ActiveUserLocust(HttpUser):
     weight = 1
-    wait_time = between(5, 9)
+    wait_time = between(4, 8)
     tasks = [ActiveUserBehavior]
 
 
