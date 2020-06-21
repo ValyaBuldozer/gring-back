@@ -36,5 +36,6 @@ class Category(db.Model):
     def to_json(self, locale):
         return {
             'id': self.id,
-            'name': self.name.get(locale)
+            'name': self.name.get(locale),
+            'label': self.label
         }
