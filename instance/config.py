@@ -16,8 +16,6 @@ REFRESH_TOKEN_EXPIRES_DAYS = 10
 JWT_BLACKLIST_ENABLED = True
 JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
 
-DIRNAME = os.path.dirname(os.path.abspath(__file__))
-
 ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 AVATAR_SIZE = 150
 MAX_CONTENT_LENGTH = 16 * 1024 * 1024

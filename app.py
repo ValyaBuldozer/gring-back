@@ -54,6 +54,7 @@ app = Flask(__name__, instance_relative_config=True)
 app.config.from_pyfile('config.py')
 # db config + secret key
 app.config.from_pyfile('secret_config.py')
+app.config['DIRNAME'] = app.root_path
 
 api_url_prefix = app.config['API_URL_PREFIX']
 app.register_blueprint(auth_blueprint, url_prefix=api_url_prefix)
